@@ -8,11 +8,13 @@ import {
   Terminal,
   Activity,
   Zap,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/prospects", label: "Prospectos", icon: Users },
   { href: "/agents", label: "Agentes", icon: Bot },
   { href: "/control", label: "Control", icon: Terminal },
   { href: "/activity", label: "Actividad", icon: Activity },
