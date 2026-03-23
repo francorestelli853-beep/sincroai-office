@@ -102,18 +102,25 @@ export async function getAgents(): Promise<Agent[]> {
       .select('*')
       .order('name', { ascending: true })
 
+    console.log('[Supabase] getAgents →', {
+      error: error?.message ?? null,
+      rowCount: data?.length ?? 0,
+      sample: data?.[0] ?? null,
+    })
+
     if (error) {
       console.warn('[Supabase] getAgents error, usando mock:', error.message)
       return mockAgents
     }
 
-    // Si la tabla está vacía, devolver mock data
     if (!data || data.length === 0) {
       console.info('[Supabase] agents vacío, usando mock')
       return mockAgents
     }
 
-    return data.map(mapAgent)
+    const mapped = data.map(mapAgent)
+    console.log('[Supabase] getAgents mapped[0]:', mapped[0])
+    return mapped
   } catch (err) {
     console.warn('[Supabase] getAgents exception, usando mock:', err)
     return mockAgents

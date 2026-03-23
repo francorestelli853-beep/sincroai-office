@@ -10,8 +10,12 @@ import { cn } from '@/lib/utils'
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
 
-function timeAgo(date: Date): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000)
+// Next.js serializa Date → string al cruzar Server→Client boundary.
+// Aceptamos ambos tipos para no crashear con datos de Supabase.
+function timeAgo(date: Date | string): string {
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return '—'
+  const diff = Math.floor((Date.now() - d.getTime()) / 1000)
   if (diff < 60) return 'hace un momento'
   if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
   if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
@@ -62,7 +66,7 @@ function AgentCard({
 }) {
   const recentLogs = logs
     .filter((l) => l.agentId === agent.id)
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
     .slice(0, 3)
 
   return (

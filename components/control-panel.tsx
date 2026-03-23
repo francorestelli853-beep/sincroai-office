@@ -25,8 +25,11 @@ import { cn } from '@/lib/utils'
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
 
-function timeAgo(date: Date): string {
-  const diff = Math.floor((Date.now() - date.getTime()) / 1000)
+// Next.js serializa Date → string al cruzar Server→Client boundary.
+function timeAgo(date: Date | string): string {
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return '—'
+  const diff = Math.floor((Date.now() - d.getTime()) / 1000)
   if (diff < 60) return 'hace un momento'
   if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`
   if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`
@@ -293,7 +296,7 @@ function MessagesFeed({ messages, agents }: { messages: Message[]; agents: Agent
     .filter((m) =>
       filter === 'all' ? true : m.fromAgent === filter || m.toAgent === filter
     )
-    .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
 
   // Fake typing indicator
   useEffect(() => {
