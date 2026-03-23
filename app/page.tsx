@@ -90,7 +90,7 @@ export default async function DashboardPage() {
             Sistema de agentes autónomos de SincroAI
           </p>
         </div>
-        <Badge variant="outline">Fase 1 — Mock Data</Badge>
+        <Badge variant="outline">Fase 2 — Supabase</Badge>
       </div>
 
       {/* KPI Cards */}
