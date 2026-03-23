@@ -17,9 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" className="dark">
-      <body className={`${inter.className} bg-gray-950 text-gray-100`}>
+      <body className={`${inter.className} bg-background text-foreground`}>
         <Sidebar />
-        <main className="ml-60 min-h-screen p-8">{children}</main>
+        {/* pt-14 on mobile to clear the fixed top bar; md:ml-60 for desktop sidebar */}
+        <main className="min-h-screen p-4 pt-[72px] md:ml-60 md:p-8 md:pt-8">{children}</main>
       </body>
     </html>
   );
