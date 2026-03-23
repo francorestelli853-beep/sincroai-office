@@ -15,6 +15,9 @@ export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// supabaseAdmin es un alias — en Fase 2 se reemplaza por el service_role key
+export const supabaseAdmin = supabase
+
 export default supabase
 
 // ─── AGENTS ────────────────────────────────────────────────────────────────────

@@ -9,15 +9,15 @@ interface StatusBadgeProps {
   size?: "sm" | "md";
 }
 
-const statusConfig = {
+const statusConfig: Record<AgentStatus, { label: string; dotClass: string; badgeClass: string; pulseClass: string }> = {
   active: {
     label: "Activo",
     dotClass: "bg-green-400",
     badgeClass: "bg-green-400/10 text-green-400 border-green-400/20",
     pulseClass: "animate-pulse",
   },
-  working: {
-    label: "Trabajando",
+  busy: {
+    label: "Ocupado",
     dotClass: "bg-yellow-400",
     badgeClass: "bg-yellow-400/10 text-yellow-400 border-yellow-400/20",
     pulseClass: "animate-pulse",
@@ -26,6 +26,12 @@ const statusConfig = {
     label: "Inactivo",
     dotClass: "bg-gray-500",
     badgeClass: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+    pulseClass: "",
+  },
+  offline: {
+    label: "Offline",
+    dotClass: "bg-red-500",
+    badgeClass: "bg-red-500/10 text-red-400 border-red-500/20",
     pulseClass: "",
   },
 };

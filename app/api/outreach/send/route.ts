@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { supabaseAdmin } from '@/lib/supabase';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // POST /api/outreach/send - Send a cold email to a lead
 export async function POST(request: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const body = await request.json();
   const { leadId, toEmail, toName, clinicName } = body;
 

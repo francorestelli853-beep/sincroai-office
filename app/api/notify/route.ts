@@ -3,8 +3,6 @@ import { Resend } from 'resend'
 
 // Fase 2: agregar webhook a n8n para notificaciones en tiempo real
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const NOTIFY_TO = 'aisincro@gmail.com'
 const NOTIFY_FROM = 'SincroAI Office <onboarding@resend.dev>'
 
@@ -192,6 +190,8 @@ export async function POST(req: NextRequest) {
   const subject = `[SincroAI] ${typeLabel}: ${agentName} — ${message}`
 
   const html = buildEmailHtml({ agentName, type, message, details, timestamp })
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
     const { error } = await resend.emails.send({

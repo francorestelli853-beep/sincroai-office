@@ -541,6 +541,19 @@ export const mockActivityLog: ActivityLog[] = [
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
 
+// Aliases para compatibilidad con rutas API legacy
+export const activityLog = mockActivityLog
+
+export interface CommandHistory {
+  id: string
+  timestamp: Date
+  targetAgent: string
+  command: string
+  status: string
+  result?: string
+}
+export const commandHistory: CommandHistory[] = []
+
 export function getAgentById(id: string): Agent | undefined {
   return mockAgents.find((agent) => agent.id === id)
 }
