@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { Agent, Task, TaskStatus, Message, ActivityLog } from './types'
 import {
   mockAgents,
@@ -8,17 +8,33 @@ import {
   getAgentById,
 } from './mock-data'
 
-// ─── CLIENT ────────────────────────────────────────────────────────────────────
+// ─── CLIENT (lazy singleton) ────────────────────────────────────────────────────
+// createClient se ejecuta solo en el primer acceso, nunca al importar el módulo.
+// Esto evita el error "supabaseUrl is required" durante el build de Next.js.
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+let _client: SupabaseClient | null = null
 
+function getSupabase(): SupabaseClient {
+  if (!_client) {
+    _client = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  return _client
+}
+
+// Proxy lazy: el cliente real solo se crea cuando se llama un método (.from, .auth, etc.)
+const lazyClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop: string | symbol) {
+    return (getSupabase() as unknown as Record<string | symbol, unknown>)[prop]
+  },
+})
+
+export const supabase = lazyClient
 // supabaseAdmin es un alias — en Fase 2 se reemplaza por el service_role key
-export const supabaseAdmin = supabase
-
-export default supabase
+export const supabaseAdmin = lazyClient
+export default lazyClient
 
 // ─── AGENTS ────────────────────────────────────────────────────────────────────
 
