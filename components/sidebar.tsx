@@ -21,7 +21,8 @@ const navItems = [
   { href: '/activity', label: 'Actividad', icon: Activity },
 ]
 
-const quickAgents = [
+// Fallback hardcodeado — usado solo si el layout no puede fetchear agents
+const FALLBACK_AGENTS = [
   { id: 'luna', emoji: '🔍', name: 'Luna', status: 'active' },
   { id: 'marco', emoji: '🤝', name: 'Marco', status: 'active' },
   { id: 'vera', emoji: '⚡', name: 'Vera', status: 'idle' },
@@ -29,7 +30,17 @@ const quickAgents = [
   { id: 'nova', emoji: '📊', name: 'Nova', status: 'busy' },
 ]
 
-function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () => void }) {
+type SidebarAgent = { id: string; emoji: string; name: string; status: string }
+
+function SidebarContent({
+  pathname,
+  onClose,
+  agents,
+}: {
+  pathname: string
+  onClose?: () => void
+  agents: SidebarAgent[]
+}) {
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
@@ -89,7 +100,7 @@ function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () 
             Agentes
           </p>
           <ul className="space-y-0.5">
-            {quickAgents.map((agent) => (
+            {agents.map((agent) => (
               <li key={agent.id}>
                 <Link
                   href={`/agents/${agent.id}`}
@@ -131,7 +142,7 @@ function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () 
   )
 }
 
-export function Sidebar() {
+export function Sidebar({ agents = FALLBACK_AGENTS }: { agents?: SidebarAgent[] }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -150,7 +161,7 @@ export function Sidebar() {
     <>
       {/* ── Desktop sidebar ──────────────────────────────────────── */}
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-60 border-r border-border bg-gray-950 md:block">
-        <SidebarContent pathname={pathname} />
+        <SidebarContent pathname={pathname} agents={agents} />
       </aside>
 
       {/* ── Mobile top bar ───────────────────────────────────────── */}
@@ -184,7 +195,7 @@ export function Sidebar() {
             className="absolute left-0 top-0 h-full w-72 bg-gray-950 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <SidebarContent pathname={pathname} onClose={() => setMobileOpen(false)} />
+            <SidebarContent pathname={pathname} onClose={() => setMobileOpen(false)} agents={agents} />
           </div>
         </div>
       )}

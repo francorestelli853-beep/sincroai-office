@@ -102,27 +102,45 @@ export async function getAgents(): Promise<Agent[]> {
       .select('*')
       .order('name', { ascending: true })
 
-    console.log('[Supabase] getAgents →', {
-      error: error?.message ?? null,
+    // Log 1: resultado crudo de Supabase — visible en Vercel Function Logs
+    console.log('[Supabase:getAgents] raw →', {
+      error: error ? { code: error.code, message: error.message, hint: error.hint } : null,
       rowCount: data?.length ?? 0,
-      sample: data?.[0] ?? null,
+      // Muestra id:status de cada fila ANTES de cualquier mapping
+      statuses: data?.map((r) => `${r.id}:${r.status}`) ?? [],
     })
 
     if (error) {
-      console.warn('[Supabase] getAgents error, usando mock:', error.message)
+      console.error('[Supabase:getAgents] query error — fallback mock:', error.message)
       return mockAgents
     }
 
     if (!data || data.length === 0) {
-      console.info('[Supabase] agents vacío, usando mock')
+      // Probable causa: RLS sin política SELECT para anon, o tabla vacía
+      console.warn('[Supabase:getAgents] result vacío (¿RLS bloqueando?) — fallback mock')
       return mockAgents
     }
 
-    const mapped = data.map(mapAgent)
-    console.log('[Supabase] getAgents mapped[0]:', mapped[0])
-    return mapped
+    // Mapping row por row: un row mal formado no tira todo
+    const agents: Agent[] = []
+    for (const row of data) {
+      try {
+        agents.push(mapAgent(row))
+      } catch (mapErr) {
+        console.error('[Supabase:getAgents] mapAgent falló en row:', { id: row.id, row, mapErr })
+      }
+    }
+
+    if (agents.length === 0) {
+      console.warn('[Supabase:getAgents] todos los rows fallaron al mapear — fallback mock')
+      return mockAgents
+    }
+
+    // Log 2: resultado final después del mapping
+    console.log('[Supabase:getAgents] ✓ usando Supabase →', agents.map((a) => `${a.name}:${a.status}`))
+    return agents
   } catch (err) {
-    console.warn('[Supabase] getAgents exception, usando mock:', err)
+    console.error('[Supabase:getAgents] exception — fallback mock:', err)
     return mockAgents
   }
 }
@@ -135,14 +153,30 @@ export async function getAgent(id: string): Promise<Agent | undefined> {
       .eq('id', id)
       .single()
 
+    console.log('[Supabase:getAgent] raw →', {
+      id,
+      error: error ? { code: error.code, message: error.message } : null,
+      status: (data as DbRow | null)?.status ?? null,
+    })
+
     if (error) {
-      console.warn('[Supabase] getAgent error, usando mock:', error.message)
+      console.warn('[Supabase:getAgent] error — fallback mock:', error.message)
       return getAgentById(id)
     }
 
-    return data ? mapAgent(data) : getAgentById(id)
+    if (!data) {
+      console.warn('[Supabase:getAgent] no data para id', id, '— fallback mock')
+      return getAgentById(id)
+    }
+
+    try {
+      return mapAgent(data as DbRow)
+    } catch (mapErr) {
+      console.error('[Supabase:getAgent] mapAgent falló:', { data, mapErr })
+      return getAgentById(id)
+    }
   } catch (err) {
-    console.warn('[Supabase] getAgent exception, usando mock:', err)
+    console.error('[Supabase:getAgent] exception — fallback mock:', err)
     return getAgentById(id)
   }
 }
