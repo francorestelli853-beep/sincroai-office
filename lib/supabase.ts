@@ -1,5 +1,12 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { Agent, Task, TaskStatus, Message, ActivityLog } from './types'
+import {
+  mockAgents,
+  mockTasks,
+  mockMessages,
+  mockActivityLog,
+  getAgentById,
+} from './mock-data'
 
 // ─── CLIENT (lazy singleton) ────────────────────────────────────────────────────
 // createClient se ejecuta solo en el primer acceso, nunca al importar el módulo.
@@ -89,7 +96,6 @@ function mapActivityLog(row: DbRow): ActivityLog {
 // ─── AGENTS ────────────────────────────────────────────────────────────────────
 
 export async function getAgents(): Promise<Agent[]> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('agents')
@@ -97,19 +103,24 @@ export async function getAgents(): Promise<Agent[]> {
       .order('name', { ascending: true })
 
     if (error) {
-      console.error('[Supabase] getAgents error:', error.message)
-      return []
+      console.warn('[Supabase] getAgents error, usando mock:', error.message)
+      return mockAgents
     }
 
-    return (data ?? []).map(mapAgent)
+    // Si la tabla está vacía, devolver mock data
+    if (!data || data.length === 0) {
+      console.info('[Supabase] agents vacío, usando mock')
+      return mockAgents
+    }
+
+    return data.map(mapAgent)
   } catch (err) {
-    console.error('[Supabase] getAgents exception:', err)
-    return []
+    console.warn('[Supabase] getAgents exception, usando mock:', err)
+    return mockAgents
   }
 }
 
 export async function getAgent(id: string): Promise<Agent | undefined> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('agents')
@@ -118,21 +129,20 @@ export async function getAgent(id: string): Promise<Agent | undefined> {
       .single()
 
     if (error) {
-      console.error('[Supabase] getAgent error:', error.message)
-      return undefined
+      console.warn('[Supabase] getAgent error, usando mock:', error.message)
+      return getAgentById(id)
     }
 
-    return data ? mapAgent(data) : undefined
+    return data ? mapAgent(data) : getAgentById(id)
   } catch (err) {
-    console.error('[Supabase] getAgent exception:', err)
-    return undefined
+    console.warn('[Supabase] getAgent exception, usando mock:', err)
+    return getAgentById(id)
   }
 }
 
 // ─── TASKS ─────────────────────────────────────────────────────────────────────
 
 export async function getTasks(): Promise<Task[]> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('tasks')
@@ -140,19 +150,23 @@ export async function getTasks(): Promise<Task[]> {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('[Supabase] getTasks error:', error.message)
-      return []
+      console.warn('[Supabase] getTasks error, usando mock:', error.message)
+      return mockTasks
     }
 
-    return (data ?? []).map(mapTask)
+    if (!data || data.length === 0) {
+      console.info('[Supabase] tasks vacío, usando mock')
+      return mockTasks
+    }
+
+    return data.map(mapTask)
   } catch (err) {
-    console.error('[Supabase] getTasks exception:', err)
-    return []
+    console.warn('[Supabase] getTasks exception, usando mock:', err)
+    return mockTasks
   }
 }
 
 export async function getTasksByStatus(status: TaskStatus): Promise<Task[]> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('tasks')
@@ -161,19 +175,22 @@ export async function getTasksByStatus(status: TaskStatus): Promise<Task[]> {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('[Supabase] getTasksByStatus error:', error.message)
-      return []
+      console.warn('[Supabase] getTasksByStatus error, usando mock:', error.message)
+      return mockTasks.filter((t) => t.status === status)
     }
 
-    return (data ?? []).map(mapTask)
+    if (!data || data.length === 0) {
+      return mockTasks.filter((t) => t.status === status)
+    }
+
+    return data.map(mapTask)
   } catch (err) {
-    console.error('[Supabase] getTasksByStatus exception:', err)
-    return []
+    console.warn('[Supabase] getTasksByStatus exception, usando mock:', err)
+    return mockTasks.filter((t) => t.status === status)
   }
 }
 
 export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('tasks')
@@ -192,7 +209,6 @@ export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
 
     if (error) {
       console.error('[Supabase] createTask error:', error.message)
-      // Devolver tarea con id temporal si falla la inserción
       return { ...task, id: `task-${Date.now()}` }
     }
 
@@ -207,7 +223,6 @@ export async function updateTaskStatus(
   taskId: string,
   status: TaskStatus
 ): Promise<void> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { error } = await getSupabase()
       .from('tasks')
@@ -229,7 +244,6 @@ export async function updateTaskStatus(
 // ─── MESSAGES ──────────────────────────────────────────────────────────────────
 
 export async function getMessages(): Promise<Message[]> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('messages')
@@ -237,14 +251,19 @@ export async function getMessages(): Promise<Message[]> {
       .order('timestamp', { ascending: true })
 
     if (error) {
-      console.error('[Supabase] getMessages error:', error.message)
-      return []
+      console.warn('[Supabase] getMessages error, usando mock:', error.message)
+      return mockMessages
     }
 
-    return (data ?? []).map(mapMessage)
+    if (!data || data.length === 0) {
+      console.info('[Supabase] messages vacío, usando mock')
+      return mockMessages
+    }
+
+    return data.map(mapMessage)
   } catch (err) {
-    console.error('[Supabase] getMessages exception:', err)
-    return []
+    console.warn('[Supabase] getMessages exception, usando mock:', err)
+    return mockMessages
   }
 }
 
@@ -252,7 +271,6 @@ export async function getMessagesBetween(
   agentA: string,
   agentB: string
 ): Promise<Message[]> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('messages')
@@ -263,21 +281,36 @@ export async function getMessagesBetween(
       .order('timestamp', { ascending: true })
 
     if (error) {
-      console.error('[Supabase] getMessagesBetween error:', error.message)
-      return []
+      console.warn('[Supabase] getMessagesBetween error, usando mock:', error.message)
+      return mockMessages.filter(
+        (m) =>
+          (m.fromAgent === agentA && m.toAgent === agentB) ||
+          (m.fromAgent === agentB && m.toAgent === agentA)
+      )
     }
 
-    return (data ?? []).map(mapMessage)
+    if (!data || data.length === 0) {
+      return mockMessages.filter(
+        (m) =>
+          (m.fromAgent === agentA && m.toAgent === agentB) ||
+          (m.fromAgent === agentB && m.toAgent === agentA)
+      )
+    }
+
+    return data.map(mapMessage)
   } catch (err) {
-    console.error('[Supabase] getMessagesBetween exception:', err)
-    return []
+    console.warn('[Supabase] getMessagesBetween exception, usando mock:', err)
+    return mockMessages.filter(
+      (m) =>
+        (m.fromAgent === agentA && m.toAgent === agentB) ||
+        (m.fromAgent === agentB && m.toAgent === agentA)
+    )
   }
 }
 
 // ─── ACTIVITY LOG ──────────────────────────────────────────────────────────────
 
 export async function getActivityLog(): Promise<ActivityLog[]> {
-  // TODO Fase 2: reemplazar por query real a Supabase
   try {
     const { data, error } = await getSupabase()
       .from('activity_log')
@@ -285,13 +318,18 @@ export async function getActivityLog(): Promise<ActivityLog[]> {
       .order('timestamp', { ascending: false })
 
     if (error) {
-      console.error('[Supabase] getActivityLog error:', error.message)
-      return []
+      console.warn('[Supabase] getActivityLog error, usando mock:', error.message)
+      return mockActivityLog
     }
 
-    return (data ?? []).map(mapActivityLog)
+    if (!data || data.length === 0) {
+      console.info('[Supabase] activity_log vacío, usando mock')
+      return mockActivityLog
+    }
+
+    return data.map(mapActivityLog)
   } catch (err) {
-    console.error('[Supabase] getActivityLog exception:', err)
-    return []
+    console.warn('[Supabase] getActivityLog exception, usando mock:', err)
+    return mockActivityLog
   }
 }

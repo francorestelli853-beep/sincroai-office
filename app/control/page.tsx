@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAgents, getTasks, getMessages } from '@/lib/supabase'
 import { Badge } from '@/components/ui/badge'
 import { ControlPanel } from '@/components/control-panel'

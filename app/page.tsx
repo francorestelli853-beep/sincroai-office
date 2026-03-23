@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import { Users, CheckCircle, MessageSquare, TrendingUp } from 'lucide-react'
 import { getAgents, getTasks, getMessages, getActivityLog } from '@/lib/supabase'

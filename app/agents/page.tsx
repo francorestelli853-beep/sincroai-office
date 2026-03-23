@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAgents, getActivityLog } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { AgentsList } from '@/components/agents-list'
