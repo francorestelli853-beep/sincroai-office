@@ -285,6 +285,64 @@ export async function getMessagesBetween(agentA: string, agentB: string): Promis
   }
 }
 
+// ─── LEADS ─────────────────────────────────────────────────────────────────────
+
+export interface Lead {
+  id: string
+  clinicName: string
+  location: string | null
+  contactName: string | null
+  email: string | null
+  phone: string | null
+  stage: string
+  assignedAgent: string | null
+  instagram: string | null
+  address: string | null
+  leadScore: number | null
+  foundBy: string | null
+  source: string | null
+  notes: string | null
+  lastContact: Date | null
+  createdAt: Date
+}
+
+function mapLead(row: DbRow): Lead {
+  return {
+    id:            row.id as string,
+    clinicName:    (row.clinic_name ?? '') as string,
+    location:      (row.location ?? null) as string | null,
+    contactName:   (row.contact_name ?? null) as string | null,
+    email:         (row.email ?? null) as string | null,
+    phone:         (row.phone ?? null) as string | null,
+    stage:         (row.stage ?? 'new') as string,
+    assignedAgent: (row.assigned_agent ?? null) as string | null,
+    instagram:     (row.instagram ?? null) as string | null,
+    address:       (row.address ?? null) as string | null,
+    leadScore:     (row.lead_score ?? null) as number | null,
+    foundBy:       (row.found_by ?? null) as string | null,
+    source:        (row.source ?? null) as string | null,
+    notes:         (row.notes ?? null) as string | null,
+    lastContact:   row.last_contact ? new Date(row.last_contact as string) : null,
+    createdAt:     new Date((row.created_at ?? new Date().toISOString()) as string),
+  }
+}
+
+export async function getLeads(): Promise<Lead[]> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('leads')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) { console.error('[Supabase:getLeads] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapLead, 'getLeads')
+  } catch (err) {
+    console.warn('[Supabase:getLeads] no disponible:', (err as Error).message)
+    return []
+  }
+}
+
 // ─── ACTIVITY LOG ──────────────────────────────────────────────────────────────
 
 export async function getActivityLog(): Promise<ActivityLog[]> {

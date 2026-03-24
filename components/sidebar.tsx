@@ -8,6 +8,7 @@ import {
   Bot,
   Terminal,
   Activity,
+  Target,
   Zap,
   Menu,
   X,
@@ -17,6 +18,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/agents', label: 'Agentes', icon: Bot },
+  { href: '/leads', label: 'Leads', icon: Target },
   { href: '/control', label: 'Control', icon: Terminal },
   { href: '/activity', label: 'Actividad', icon: Activity },
 ]
