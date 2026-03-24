@@ -14,7 +14,15 @@ function getSupabase(): SupabaseClient {
     if (!url || !key) {
       throw new Error('Supabase env vars not configured')
     }
-    _client = createClient(url, key)
+    // IMPORTANTE: fetch con cache:'no-store' evita que Next.js 14 cachee las
+    // respuestas del SDK de Supabase. Sin esto, cambios en la DB no se reflejan
+    // en la app hasta que el servidor se reinicia (cache hit permanente).
+    _client = createClient(url, key, {
+      global: {
+        fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+          fetch(input, { ...init, cache: 'no-store' }),
+      },
+    })
   }
   return _client
 }
