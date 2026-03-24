@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AgentStatusSelector } from '@/components/agent-status-selector'
 import { cn } from '@/lib/utils'
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
@@ -141,9 +142,7 @@ export default async function AgentDetailPage({
             </div>
           </div>
         </div>
-        <Badge variant={statusBadgeVariant[agent.status]} className="self-start sm:self-auto">
-          {statusLabel[agent.status]}
-        </Badge>
+        <AgentStatusSelector agentId={agent.id} currentStatus={agent.status} />
       </div>
 
       {/* Two-column layout */}

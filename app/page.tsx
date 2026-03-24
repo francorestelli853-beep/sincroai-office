@@ -5,6 +5,7 @@ import { Users, CheckCircle, MessageSquare, TrendingUp } from 'lucide-react'
 import { getAgents, getTasks, getMessages, getActivityLog } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { RefreshButton } from '@/components/refresh-button'
 import { AgentStatus } from '@/lib/types'
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────────
@@ -95,59 +96,67 @@ export default async function DashboardPage() {
         <Badge variant="outline">Fase 2 — Supabase</Badge>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — clickeables */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Agentes Activos
-              </p>
-              <Users className="h-4 w-4 text-emerald-400" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-white">{activeAgents}</p>
-            <p className="mt-1 text-xs text-muted-foreground">de {agents.length} total</p>
-          </CardContent>
-        </Card>
+        <Link href="/agents" className="block">
+          <Card className="transition-colors hover:border-emerald-500/30">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Agentes Activos
+                </p>
+                <Users className="h-4 w-4 text-emerald-400" />
+              </div>
+              <p className="mt-2 text-3xl font-bold text-white">{activeAgents}</p>
+              <p className="mt-1 text-xs text-muted-foreground">de {agents.length} total</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Tareas Completadas
-              </p>
-              <CheckCircle className="h-4 w-4 text-violet-400" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-white">{completedTasks}</p>
-            <p className="mt-1 text-xs text-muted-foreground">de {tasks.length} tareas</p>
-          </CardContent>
-        </Card>
+        <Link href="/control" className="block">
+          <Card className="transition-colors hover:border-violet-500/30">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Tareas Completadas
+                </p>
+                <CheckCircle className="h-4 w-4 text-violet-400" />
+              </div>
+              <p className="mt-2 text-3xl font-bold text-white">{completedTasks}</p>
+              <p className="mt-1 text-xs text-muted-foreground">de {tasks.length} tareas</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Mensajes Hoy
-              </p>
-              <MessageSquare className="h-4 w-4 text-blue-400" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-white">{messagesToday}</p>
-            <p className="mt-1 text-xs text-muted-foreground">entre agentes</p>
-          </CardContent>
-        </Card>
+        <Link href="/control" className="block">
+          <Card className="transition-colors hover:border-blue-500/30">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Mensajes Hoy
+                </p>
+                <MessageSquare className="h-4 w-4 text-blue-400" />
+              </div>
+              <p className="mt-2 text-3xl font-bold text-white">{messagesToday}</p>
+              <p className="mt-1 text-xs text-muted-foreground">entre agentes</p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                Tasa de Éxito
-              </p>
-              <TrendingUp className="h-4 w-4 text-yellow-400" />
-            </div>
-            <p className="mt-2 text-3xl font-bold text-white">{successRate}%</p>
-            <p className="mt-1 text-xs text-muted-foreground">tareas completadas</p>
-          </CardContent>
-        </Card>
+        <Link href="/activity" className="block">
+          <Card className="transition-colors hover:border-yellow-500/30">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Tasa de Éxito
+                </p>
+                <TrendingUp className="h-4 w-4 text-yellow-400" />
+              </div>
+              <p className="mt-2 text-3xl font-bold text-white">{successRate}%</p>
+              <p className="mt-1 text-xs text-muted-foreground">tareas completadas</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Agents Grid */}
@@ -192,9 +201,12 @@ export default async function DashboardPage() {
       <div>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">Actividad Reciente</h2>
-          <Link href="/activity" className="text-xs text-violet-400 transition-colors hover:text-violet-300">
-            Ver todo →
-          </Link>
+          <div className="flex items-center gap-2">
+            <RefreshButton label="Refrescar" />
+            <Link href="/activity" className="text-xs text-violet-400 transition-colors hover:text-violet-300">
+              Ver todo →
+            </Link>
+          </div>
         </div>
 
         {/* TODO: agregar skeleton mientras carga */}
