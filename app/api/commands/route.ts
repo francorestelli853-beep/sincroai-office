@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { commandHistory as mockCommands } from '@/lib/mock-data';
 
 // GET /api/commands - Get command history
 export async function GET() {
@@ -13,7 +12,7 @@ export async function GET() {
     .limit(20);
 
   if (error || !data || data.length === 0) {
-    return NextResponse.json({ commands: mockCommands });
+    return NextResponse.json({ commands: [] });
   }
 
   const commands = data.map((cmd: any) => ({

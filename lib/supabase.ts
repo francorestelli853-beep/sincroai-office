@@ -1,12 +1,5 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { Agent, Task, TaskStatus, Message, ActivityLog } from './types'
-import {
-  mockAgents,
-  mockTasks,
-  mockMessages,
-  mockActivityLog,
-  getAgentById,
-} from './mock-data'
 
 // ─── CLIENT (lazy singleton) ────────────────────────────────────────────────────
 // createClient se ejecuta solo en el primer acceso, nunca al importar el módulo.
@@ -44,333 +37,245 @@ type DbRow = Record<string, unknown>
 
 function mapAgent(row: DbRow): Agent {
   return {
-    id: row.id as string,
-    name: row.name as string,
-    role: row.role as string,
+    id:          row.id as string,
+    name:        row.name as string,
+    role:        row.role as string,
     personality: row.personality as string,
-    status: row.status as Agent['status'],
-    tools: Array.isArray(row.tools) ? (row.tools as string[]) : [],
-    objective: row.objective as string,
-    avatar: row.avatar as string,
-    lastActive: new Date((row.last_active ?? row.created_at) as string),
+    status:      row.status as Agent['status'],
+    tools:       Array.isArray(row.tools) ? (row.tools as string[]) : [],
+    objective:   row.objective as string,
+    avatar:      row.avatar as string,
+    lastActive:  new Date((row.last_active ?? row.created_at) as string),
   }
 }
 
 function mapTask(row: DbRow): Task {
   return {
-    id: row.id as string,
-    title: row.title as string,
+    id:          row.id as string,
+    title:       row.title as string,
     description: row.description as string,
-    assignedTo: row.assigned_to as string,
-    status: row.status as Task['status'],
-    priority: row.priority as Task['priority'],
-    subtasks: Array.isArray(row.subtasks) ? (row.subtasks as string[]) : [],
-    createdAt: new Date(row.created_at as string),
+    assignedTo:  row.assigned_to as string,
+    status:      row.status as Task['status'],
+    priority:    row.priority as Task['priority'],
+    subtasks:    Array.isArray(row.subtasks) ? (row.subtasks as string[]) : [],
+    createdAt:   new Date(row.created_at as string),
     completedAt: row.completed_at ? new Date(row.completed_at as string) : null,
   }
 }
 
 function mapMessage(row: DbRow): Message {
   return {
-    id: row.id as string,
+    id:        row.id as string,
     fromAgent: row.from_agent as string,
-    toAgent: row.to_agent as string,
-    content: row.content as string,
-    type: row.type as Message['type'],
+    toAgent:   row.to_agent as string,
+    content:   row.content as string,
+    type:      row.type as Message['type'],
     timestamp: new Date(row.timestamp as string),
   }
 }
 
 function mapActivityLog(row: DbRow): ActivityLog {
   return {
-    id: row.id as string,
-    agentId: row.agent_id as string,
+    id:        row.id as string,
+    agentId:   row.agent_id as string,
     agentName: row.agent_name as string,
-    action: row.action as string,
-    details: row.details as string,
-    category: row.category as ActivityLog['category'],
-    timestamp: new Date(row.timestamp as string),
+    action:    row.action as string,
+    details:   row.details as string,
+    category:  row.category as ActivityLog['category'],
+    timestamp: new Date((row.timestamp ?? row.created_at) as string),
   }
+}
+
+// ─── SAFE MAPPER ───────────────────────────────────────────────────────────────
+// Mapea rows individualmente — un row mal formado no cancela los demás.
+
+function safeMap<T>(rows: DbRow[], mapper: (r: DbRow) => T, label: string): T[] {
+  const results: T[] = []
+  for (const row of rows) {
+    try {
+      results.push(mapper(row))
+    } catch (err) {
+      console.error(`[Supabase:${label}] mapeo fallido en row id=${row.id}:`, err)
+    }
+  }
+  return results
 }
 
 // ─── AGENTS ────────────────────────────────────────────────────────────────────
 
 export async function getAgents(): Promise<Agent[]> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('agents')
-      .select('*')
-      .order('name', { ascending: true })
+  const { data, error } = await getSupabase()
+    .from('agents')
+    .select('*')
+    .order('name', { ascending: true })
 
-    // Log 1: resultado crudo de Supabase — visible en Vercel Function Logs
-    console.log('[Supabase:getAgents] raw →', {
-      error: error ? { code: error.code, message: error.message, hint: error.hint } : null,
-      rowCount: data?.length ?? 0,
-      // Muestra id:status de cada fila ANTES de cualquier mapping
-      statuses: data?.map((r) => `${r.id}:${r.status}`) ?? [],
-    })
+  // Log de diagnóstico — visible en Vercel Function Logs
+  console.log('[Supabase:getAgents]', {
+    error:    error ? { code: error.code, message: error.message } : null,
+    rowCount: data?.length ?? 0,
+    statuses: data?.map((r) => `${r.id}:${r.status}`) ?? [],
+  })
 
-    if (error) {
-      console.error('[Supabase:getAgents] query error — fallback mock:', error.message)
-      return mockAgents
-    }
-
-    if (!data || data.length === 0) {
-      // Probable causa: RLS sin política SELECT para anon, o tabla vacía
-      console.warn('[Supabase:getAgents] result vacío (¿RLS bloqueando?) — fallback mock')
-      return mockAgents
-    }
-
-    // Mapping row por row: un row mal formado no tira todo
-    const agents: Agent[] = []
-    for (const row of data) {
-      try {
-        agents.push(mapAgent(row))
-      } catch (mapErr) {
-        console.error('[Supabase:getAgents] mapAgent falló en row:', { id: row.id, row, mapErr })
-      }
-    }
-
-    if (agents.length === 0) {
-      console.warn('[Supabase:getAgents] todos los rows fallaron al mapear — fallback mock')
-      return mockAgents
-    }
-
-    // Log 2: resultado final después del mapping
-    console.log('[Supabase:getAgents] ✓ usando Supabase →', agents.map((a) => `${a.name}:${a.status}`))
-    return agents
-  } catch (err) {
-    console.error('[Supabase:getAgents] exception — fallback mock:', err)
-    return mockAgents
+  if (error) {
+    console.error('[Supabase:getAgents] query error:', error.message)
+    return []
   }
+
+  if (!data || data.length === 0) {
+    console.warn('[Supabase:getAgents] sin datos — ¿RLS bloqueando?')
+    return []
+  }
+
+  const agents = safeMap(data as DbRow[], mapAgent, 'getAgents')
+  console.log('[Supabase:getAgents] ✓', agents.map((a) => `${a.name}:${a.status}`))
+  return agents
 }
 
 export async function getAgent(id: string): Promise<Agent | undefined> {
+  const { data, error } = await getSupabase()
+    .from('agents')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  console.log('[Supabase:getAgent]', {
+    id,
+    error:  error ? { code: error.code, message: error.message } : null,
+    status: (data as DbRow | null)?.status ?? null,
+  })
+
+  if (error || !data) {
+    console.warn('[Supabase:getAgent] sin datos para id:', id)
+    return undefined
+  }
+
   try {
-    const { data, error } = await getSupabase()
-      .from('agents')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    console.log('[Supabase:getAgent] raw →', {
-      id,
-      error: error ? { code: error.code, message: error.message } : null,
-      status: (data as DbRow | null)?.status ?? null,
-    })
-
-    if (error) {
-      console.warn('[Supabase:getAgent] error — fallback mock:', error.message)
-      return getAgentById(id)
-    }
-
-    if (!data) {
-      console.warn('[Supabase:getAgent] no data para id', id, '— fallback mock')
-      return getAgentById(id)
-    }
-
-    try {
-      return mapAgent(data as DbRow)
-    } catch (mapErr) {
-      console.error('[Supabase:getAgent] mapAgent falló:', { data, mapErr })
-      return getAgentById(id)
-    }
+    return mapAgent(data as DbRow)
   } catch (err) {
-    console.error('[Supabase:getAgent] exception — fallback mock:', err)
-    return getAgentById(id)
+    console.error('[Supabase:getAgent] mapAgent falló:', err)
+    return undefined
   }
 }
 
 // ─── TASKS ─────────────────────────────────────────────────────────────────────
 
 export async function getTasks(): Promise<Task[]> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('tasks')
-      .select('*')
-      .order('created_at', { ascending: false })
+  const { data, error } = await getSupabase()
+    .from('tasks')
+    .select('*')
+    .order('created_at', { ascending: false })
 
-    if (error) {
-      console.warn('[Supabase] getTasks error, usando mock:', error.message)
-      return mockTasks
-    }
-
-    if (!data || data.length === 0) {
-      console.info('[Supabase] tasks vacío, usando mock')
-      return mockTasks
-    }
-
-    return data.map(mapTask)
-  } catch (err) {
-    console.warn('[Supabase] getTasks exception, usando mock:', err)
-    return mockTasks
+  if (error) {
+    console.error('[Supabase:getTasks] error:', error.message)
+    return []
   }
+  if (!data || data.length === 0) return []
+
+  return safeMap(data as DbRow[], mapTask, 'getTasks')
 }
 
 export async function getTasksByStatus(status: TaskStatus): Promise<Task[]> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('tasks')
-      .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false })
+  const { data, error } = await getSupabase()
+    .from('tasks')
+    .select('*')
+    .eq('status', status)
+    .order('created_at', { ascending: false })
 
-    if (error) {
-      console.warn('[Supabase] getTasksByStatus error, usando mock:', error.message)
-      return mockTasks.filter((t) => t.status === status)
-    }
-
-    if (!data || data.length === 0) {
-      return mockTasks.filter((t) => t.status === status)
-    }
-
-    return data.map(mapTask)
-  } catch (err) {
-    console.warn('[Supabase] getTasksByStatus exception, usando mock:', err)
-    return mockTasks.filter((t) => t.status === status)
+  if (error) {
+    console.error('[Supabase:getTasksByStatus] error:', error.message)
+    return []
   }
+  if (!data || data.length === 0) return []
+
+  return safeMap(data as DbRow[], mapTask, 'getTasksByStatus')
 }
 
 export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('tasks')
-      .insert({
-        title: task.title,
-        description: task.description,
-        assigned_to: task.assignedTo,
-        status: task.status,
-        priority: task.priority,
-        subtasks: task.subtasks,
-        created_at: task.createdAt.toISOString(),
-        completed_at: task.completedAt?.toISOString() ?? null,
-      })
-      .select()
-      .single()
+  const { data, error } = await getSupabase()
+    .from('tasks')
+    .insert({
+      title:        task.title,
+      description:  task.description,
+      assigned_to:  task.assignedTo,
+      status:       task.status,
+      priority:     task.priority,
+      subtasks:     task.subtasks,
+      created_at:   task.createdAt.toISOString(),
+      completed_at: task.completedAt?.toISOString() ?? null,
+    })
+    .select()
+    .single()
 
-    if (error) {
-      console.error('[Supabase] createTask error:', error.message)
-      return { ...task, id: `task-${Date.now()}` }
-    }
-
-    return mapTask(data)
-  } catch (err) {
-    console.error('[Supabase] createTask exception:', err)
+  if (error || !data) {
+    console.error('[Supabase:createTask] error:', error?.message)
     return { ...task, id: `task-${Date.now()}` }
   }
+
+  return mapTask(data as DbRow)
 }
 
-export async function updateTaskStatus(
-  taskId: string,
-  status: TaskStatus
-): Promise<void> {
-  try {
-    const { error } = await getSupabase()
-      .from('tasks')
-      .update({
-        status,
-        completed_at:
-          status === 'completed' ? new Date().toISOString() : null,
-      })
-      .eq('id', taskId)
+export async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<void> {
+  const { error } = await getSupabase()
+    .from('tasks')
+    .update({
+      status,
+      completed_at: status === 'completed' ? new Date().toISOString() : null,
+    })
+    .eq('id', taskId)
 
-    if (error) {
-      console.error('[Supabase] updateTaskStatus error:', error.message)
-    }
-  } catch (err) {
-    console.error('[Supabase] updateTaskStatus exception:', err)
+  if (error) {
+    console.error('[Supabase:updateTaskStatus] error:', error.message)
   }
 }
 
 // ─── MESSAGES ──────────────────────────────────────────────────────────────────
 
 export async function getMessages(): Promise<Message[]> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('messages')
-      .select('*')
-      .order('timestamp', { ascending: true })
+  const { data, error } = await getSupabase()
+    .from('messages')
+    .select('*')
+    .order('timestamp', { ascending: true })
 
-    if (error) {
-      console.warn('[Supabase] getMessages error, usando mock:', error.message)
-      return mockMessages
-    }
-
-    if (!data || data.length === 0) {
-      console.info('[Supabase] messages vacío, usando mock')
-      return mockMessages
-    }
-
-    return data.map(mapMessage)
-  } catch (err) {
-    console.warn('[Supabase] getMessages exception, usando mock:', err)
-    return mockMessages
+  if (error) {
+    console.error('[Supabase:getMessages] error:', error.message)
+    return []
   }
+  if (!data || data.length === 0) return []
+
+  return safeMap(data as DbRow[], mapMessage, 'getMessages')
 }
 
-export async function getMessagesBetween(
-  agentA: string,
-  agentB: string
-): Promise<Message[]> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('messages')
-      .select('*')
-      .or(
-        `and(from_agent.eq.${agentA},to_agent.eq.${agentB}),and(from_agent.eq.${agentB},to_agent.eq.${agentA})`
-      )
-      .order('timestamp', { ascending: true })
-
-    if (error) {
-      console.warn('[Supabase] getMessagesBetween error, usando mock:', error.message)
-      return mockMessages.filter(
-        (m) =>
-          (m.fromAgent === agentA && m.toAgent === agentB) ||
-          (m.fromAgent === agentB && m.toAgent === agentA)
-      )
-    }
-
-    if (!data || data.length === 0) {
-      return mockMessages.filter(
-        (m) =>
-          (m.fromAgent === agentA && m.toAgent === agentB) ||
-          (m.fromAgent === agentB && m.toAgent === agentA)
-      )
-    }
-
-    return data.map(mapMessage)
-  } catch (err) {
-    console.warn('[Supabase] getMessagesBetween exception, usando mock:', err)
-    return mockMessages.filter(
-      (m) =>
-        (m.fromAgent === agentA && m.toAgent === agentB) ||
-        (m.fromAgent === agentB && m.toAgent === agentA)
+export async function getMessagesBetween(agentA: string, agentB: string): Promise<Message[]> {
+  const { data, error } = await getSupabase()
+    .from('messages')
+    .select('*')
+    .or(
+      `and(from_agent.eq.${agentA},to_agent.eq.${agentB}),and(from_agent.eq.${agentB},to_agent.eq.${agentA})`
     )
+    .order('timestamp', { ascending: true })
+
+  if (error) {
+    console.error('[Supabase:getMessagesBetween] error:', error.message)
+    return []
   }
+  if (!data || data.length === 0) return []
+
+  return safeMap(data as DbRow[], mapMessage, 'getMessagesBetween')
 }
 
 // ─── ACTIVITY LOG ──────────────────────────────────────────────────────────────
 
 export async function getActivityLog(): Promise<ActivityLog[]> {
-  try {
-    const { data, error } = await getSupabase()
-      .from('activity_log')
-      .select('*')
-      .order('timestamp', { ascending: false })
+  const { data, error } = await getSupabase()
+    .from('activity_log')
+    .select('*')
+    .order('timestamp', { ascending: false })
 
-    if (error) {
-      console.warn('[Supabase] getActivityLog error, usando mock:', error.message)
-      return mockActivityLog
-    }
-
-    if (!data || data.length === 0) {
-      console.info('[Supabase] activity_log vacío, usando mock')
-      return mockActivityLog
-    }
-
-    return data.map(mapActivityLog)
-  } catch (err) {
-    console.warn('[Supabase] getActivityLog exception, usando mock:', err)
-    return mockActivityLog
+  if (error) {
+    console.error('[Supabase:getActivityLog] error:', error.message)
+    return []
   }
+  if (!data || data.length === 0) return []
+
+  return safeMap(data as DbRow[], mapActivityLog, 'getActivityLog')
 }
