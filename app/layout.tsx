@@ -1,3 +1,7 @@
+// Forzar rendering dinámico en todas las páginas — el layout llama a Supabase
+// y las env vars no están disponibles en build time de páginas estáticas.
+export const dynamic = 'force-dynamic'
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";

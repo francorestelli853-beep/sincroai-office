@@ -104,55 +104,59 @@ function safeMap<T>(rows: DbRow[], mapper: (r: DbRow) => T, label: string): T[] 
 // ─── AGENTS ────────────────────────────────────────────────────────────────────
 
 export async function getAgents(): Promise<Agent[]> {
-  const { data, error } = await getSupabase()
-    .from('agents')
-    .select('*')
-    .order('name', { ascending: true })
+  try {
+    const { data, error } = await getSupabase()
+      .from('agents')
+      .select('*')
+      .order('name', { ascending: true })
 
-  // Log de diagnóstico — visible en Vercel Function Logs
-  console.log('[Supabase:getAgents]', {
-    error:    error ? { code: error.code, message: error.message } : null,
-    rowCount: data?.length ?? 0,
-    statuses: data?.map((r) => `${r.id}:${r.status}`) ?? [],
-  })
+    // Log de diagnóstico — visible en Vercel Function Logs
+    console.log('[Supabase:getAgents]', {
+      error:    error ? { code: error.code, message: error.message } : null,
+      rowCount: data?.length ?? 0,
+      statuses: data?.map((r) => `${r.id}:${r.status}`) ?? [],
+    })
 
-  if (error) {
-    console.error('[Supabase:getAgents] query error:', error.message)
+    if (error) {
+      console.error('[Supabase:getAgents] query error:', error.message)
+      return []
+    }
+    if (!data || data.length === 0) {
+      console.warn('[Supabase:getAgents] sin datos — ¿RLS bloqueando?')
+      return []
+    }
+
+    const agents = safeMap(data as DbRow[], mapAgent, 'getAgents')
+    console.log('[Supabase:getAgents] ✓', agents.map((a) => `${a.name}:${a.status}`))
+    return agents
+  } catch (err) {
+    // Incluye "Supabase env vars not configured" en build time sin env vars
+    console.warn('[Supabase:getAgents] no disponible:', (err as Error).message)
     return []
   }
-
-  if (!data || data.length === 0) {
-    console.warn('[Supabase:getAgents] sin datos — ¿RLS bloqueando?')
-    return []
-  }
-
-  const agents = safeMap(data as DbRow[], mapAgent, 'getAgents')
-  console.log('[Supabase:getAgents] ✓', agents.map((a) => `${a.name}:${a.status}`))
-  return agents
 }
 
 export async function getAgent(id: string): Promise<Agent | undefined> {
-  const { data, error } = await getSupabase()
-    .from('agents')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  console.log('[Supabase:getAgent]', {
-    id,
-    error:  error ? { code: error.code, message: error.message } : null,
-    status: (data as DbRow | null)?.status ?? null,
-  })
-
-  if (error || !data) {
-    console.warn('[Supabase:getAgent] sin datos para id:', id)
-    return undefined
-  }
-
   try {
+    const { data, error } = await getSupabase()
+      .from('agents')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    console.log('[Supabase:getAgent]', {
+      id,
+      error:  error ? { code: error.code, message: error.message } : null,
+      status: (data as DbRow | null)?.status ?? null,
+    })
+
+    if (error || !data) {
+      console.warn('[Supabase:getAgent] sin datos para id:', id)
+      return undefined
+    }
     return mapAgent(data as DbRow)
   } catch (err) {
-    console.error('[Supabase:getAgent] mapAgent falló:', err)
+    console.warn('[Supabase:getAgent] no disponible:', (err as Error).message)
     return undefined
   }
 }
@@ -160,122 +164,133 @@ export async function getAgent(id: string): Promise<Agent | undefined> {
 // ─── TASKS ─────────────────────────────────────────────────────────────────────
 
 export async function getTasks(): Promise<Task[]> {
-  const { data, error } = await getSupabase()
-    .from('tasks')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await getSupabase()
+      .from('tasks')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[Supabase:getTasks] error:', error.message)
+    if (error) { console.error('[Supabase:getTasks] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapTask, 'getTasks')
+  } catch (err) {
+    console.warn('[Supabase:getTasks] no disponible:', (err as Error).message)
     return []
   }
-  if (!data || data.length === 0) return []
-
-  return safeMap(data as DbRow[], mapTask, 'getTasks')
 }
 
 export async function getTasksByStatus(status: TaskStatus): Promise<Task[]> {
-  const { data, error } = await getSupabase()
-    .from('tasks')
-    .select('*')
-    .eq('status', status)
-    .order('created_at', { ascending: false })
+  try {
+    const { data, error } = await getSupabase()
+      .from('tasks')
+      .select('*')
+      .eq('status', status)
+      .order('created_at', { ascending: false })
 
-  if (error) {
-    console.error('[Supabase:getTasksByStatus] error:', error.message)
+    if (error) { console.error('[Supabase:getTasksByStatus] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapTask, 'getTasksByStatus')
+  } catch (err) {
+    console.warn('[Supabase:getTasksByStatus] no disponible:', (err as Error).message)
     return []
   }
-  if (!data || data.length === 0) return []
-
-  return safeMap(data as DbRow[], mapTask, 'getTasksByStatus')
 }
 
 export async function createTask(task: Omit<Task, 'id'>): Promise<Task> {
-  const { data, error } = await getSupabase()
-    .from('tasks')
-    .insert({
-      title:        task.title,
-      description:  task.description,
-      assigned_to:  task.assignedTo,
-      status:       task.status,
-      priority:     task.priority,
-      subtasks:     task.subtasks,
-      created_at:   task.createdAt.toISOString(),
-      completed_at: task.completedAt?.toISOString() ?? null,
-    })
-    .select()
-    .single()
+  try {
+    const { data, error } = await getSupabase()
+      .from('tasks')
+      .insert({
+        title:        task.title,
+        description:  task.description,
+        assigned_to:  task.assignedTo,
+        status:       task.status,
+        priority:     task.priority,
+        subtasks:     task.subtasks,
+        created_at:   task.createdAt.toISOString(),
+        completed_at: task.completedAt?.toISOString() ?? null,
+      })
+      .select()
+      .single()
 
-  if (error || !data) {
-    console.error('[Supabase:createTask] error:', error?.message)
+    if (error || !data) {
+      console.error('[Supabase:createTask] error:', error?.message)
+      return { ...task, id: `task-${Date.now()}` }
+    }
+    return mapTask(data as DbRow)
+  } catch (err) {
+    console.warn('[Supabase:createTask] no disponible:', (err as Error).message)
     return { ...task, id: `task-${Date.now()}` }
   }
-
-  return mapTask(data as DbRow)
 }
 
 export async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<void> {
-  const { error } = await getSupabase()
-    .from('tasks')
-    .update({
-      status,
-      completed_at: status === 'completed' ? new Date().toISOString() : null,
-    })
-    .eq('id', taskId)
+  try {
+    const { error } = await getSupabase()
+      .from('tasks')
+      .update({
+        status,
+        completed_at: status === 'completed' ? new Date().toISOString() : null,
+      })
+      .eq('id', taskId)
 
-  if (error) {
-    console.error('[Supabase:updateTaskStatus] error:', error.message)
+    if (error) console.error('[Supabase:updateTaskStatus] error:', error.message)
+  } catch (err) {
+    console.warn('[Supabase:updateTaskStatus] no disponible:', (err as Error).message)
   }
 }
 
 // ─── MESSAGES ──────────────────────────────────────────────────────────────────
 
 export async function getMessages(): Promise<Message[]> {
-  const { data, error } = await getSupabase()
-    .from('messages')
-    .select('*')
-    .order('timestamp', { ascending: true })
+  try {
+    const { data, error } = await getSupabase()
+      .from('messages')
+      .select('*')
+      .order('timestamp', { ascending: true })
 
-  if (error) {
-    console.error('[Supabase:getMessages] error:', error.message)
+    if (error) { console.error('[Supabase:getMessages] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapMessage, 'getMessages')
+  } catch (err) {
+    console.warn('[Supabase:getMessages] no disponible:', (err as Error).message)
     return []
   }
-  if (!data || data.length === 0) return []
-
-  return safeMap(data as DbRow[], mapMessage, 'getMessages')
 }
 
 export async function getMessagesBetween(agentA: string, agentB: string): Promise<Message[]> {
-  const { data, error } = await getSupabase()
-    .from('messages')
-    .select('*')
-    .or(
-      `and(from_agent.eq.${agentA},to_agent.eq.${agentB}),and(from_agent.eq.${agentB},to_agent.eq.${agentA})`
-    )
-    .order('timestamp', { ascending: true })
+  try {
+    const { data, error } = await getSupabase()
+      .from('messages')
+      .select('*')
+      .or(
+        `and(from_agent.eq.${agentA},to_agent.eq.${agentB}),and(from_agent.eq.${agentB},to_agent.eq.${agentA})`
+      )
+      .order('timestamp', { ascending: true })
 
-  if (error) {
-    console.error('[Supabase:getMessagesBetween] error:', error.message)
+    if (error) { console.error('[Supabase:getMessagesBetween] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapMessage, 'getMessagesBetween')
+  } catch (err) {
+    console.warn('[Supabase:getMessagesBetween] no disponible:', (err as Error).message)
     return []
   }
-  if (!data || data.length === 0) return []
-
-  return safeMap(data as DbRow[], mapMessage, 'getMessagesBetween')
 }
 
 // ─── ACTIVITY LOG ──────────────────────────────────────────────────────────────
 
 export async function getActivityLog(): Promise<ActivityLog[]> {
-  const { data, error } = await getSupabase()
-    .from('activity_log')
-    .select('*')
-    .order('timestamp', { ascending: false })
+  try {
+    const { data, error } = await getSupabase()
+      .from('activity_log')
+      .select('*')
+      .order('timestamp', { ascending: false })
 
-  if (error) {
-    console.error('[Supabase:getActivityLog] error:', error.message)
+    if (error) { console.error('[Supabase:getActivityLog] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapActivityLog, 'getActivityLog')
+  } catch (err) {
+    console.warn('[Supabase:getActivityLog] no disponible:', (err as Error).message)
     return []
   }
-  if (!data || data.length === 0) return []
-
-  return safeMap(data as DbRow[], mapActivityLog, 'getActivityLog')
 }
