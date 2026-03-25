@@ -49,6 +49,15 @@ function timeAgo(date: Date | string | null): string {
   return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })
 }
 
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+
+function formatDate(date: Date | string | null): string {
+  if (!date) return '—'
+  const d = date instanceof Date ? date : new Date(date)
+  if (isNaN(d.getTime())) return '—'
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
+}
+
 // ─── SCORE BAR ─────────────────────────────────────────────────────────────────
 
 function ScoreBar({ score }: { score: number | null }) {
@@ -354,8 +363,9 @@ function AddLeadDialog({
 
 // ─── LEAD CARD ─────────────────────────────────────────────────────────────────
 
-function LeadCard({ lead, onClick, onStageChange }: {
+function LeadCard({ lead, rowNumber, onClick, onStageChange }: {
   lead: Lead
+  rowNumber: number
   onClick: () => void
   onStageChange: (id: string, stage: string) => Promise<void>
 }) {
@@ -376,14 +386,19 @@ function LeadCard({ lead, onClick, onStageChange }: {
       <CardContent className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="min-w-0">
-            <p className="font-semibold text-white truncate">{lead.clinicName}</p>
-            {lead.location && (
-              <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <MapPin className="h-3 w-3 shrink-0" />
-                {lead.location}
-              </p>
-            )}
+          <div className="min-w-0 flex items-start gap-2">
+            <span className="mt-0.5 shrink-0 rounded bg-gray-700/70 px-1.5 py-0.5 text-[10px] font-mono font-medium text-gray-400">
+              #{rowNumber}
+            </span>
+            <div className="min-w-0">
+              <p className="font-semibold text-white truncate">{lead.clinicName}</p>
+              {lead.location && (
+                <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  {lead.location}
+                </p>
+              )}
+            </div>
           </div>
           <Badge variant={stageInfo?.variant ?? 'secondary'} className="shrink-0 text-[10px]">
             {stageInfo?.label ?? lead.stage}
@@ -429,7 +444,7 @@ function LeadCard({ lead, onClick, onStageChange }: {
               <span>{AGENT_AVATARS[lead.foundBy] ?? '🤖'} {lead.foundBy}</span>
             )}
             <span className="mx-1">·</span>
-            <span>{timeAgo(lead.createdAt)}</span>
+            <span>{formatDate(lead.createdAt)}</span>
           </div>
 
           {/* Stage quick-change */}
@@ -622,10 +637,11 @@ export function LeadsPanel({ initialLeads }: { initialLeads: Lead[] }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((lead) => (
+          {filtered.map((lead, idx) => (
             <LeadCard
               key={lead.id}
               lead={lead}
+              rowNumber={idx + 1}
               onClick={() => setSelectedLead(lead)}
               onStageChange={handleStageChange}
             />
