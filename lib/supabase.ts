@@ -343,7 +343,42 @@ export async function getLeads(): Promise<Lead[]> {
   }
 }
 
+export async function getLeadsByAgent(agentId: string): Promise<Lead[]> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('leads')
+      .select('*')
+      .eq('found_by', agentId)
+      .order('created_at', { ascending: false })
+
+    if (error) { console.error('[Supabase:getLeadsByAgent] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapLead, 'getLeadsByAgent')
+  } catch (err) {
+    console.warn('[Supabase:getLeadsByAgent] no disponible:', (err as Error).message)
+    return []
+  }
+}
+
 // ─── ACTIVITY LOG ──────────────────────────────────────────────────────────────
+
+export async function getActivityByAgent(agentId: string): Promise<ActivityLog[]> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('activity_log')
+      .select('*')
+      .eq('agent_id', agentId)
+      .order('timestamp', { ascending: false })
+      .limit(20)
+
+    if (error) { console.error('[Supabase:getActivityByAgent] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapActivityLog, 'getActivityByAgent')
+  } catch (err) {
+    console.warn('[Supabase:getActivityByAgent] no disponible:', (err as Error).message)
+    return []
+  }
+}
 
 export async function getActivityLog(): Promise<ActivityLog[]> {
   try {
