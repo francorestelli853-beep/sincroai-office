@@ -289,6 +289,7 @@ export async function getMessagesBetween(agentA: string, agentB: string): Promis
 
 export interface Lead {
   id: string
+  leadNumber: number | null
   clinicName: string
   location: string | null
   contactName: string | null
@@ -309,6 +310,7 @@ export interface Lead {
 function mapLead(row: DbRow): Lead {
   return {
     id:            row.id as string,
+    leadNumber:    (row.lead_number ?? null) as number | null,
     clinicName:    (row.clinic_name ?? '') as string,
     location:      (row.location ?? null) as string | null,
     contactName:   (row.contact_name ?? null) as string | null,
@@ -332,7 +334,7 @@ export async function getLeads(): Promise<Lead[]> {
     const { data, error } = await getSupabase()
       .from('leads')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('lead_number', { ascending: false })
 
     if (error) { console.error('[Supabase:getLeads] error:', error.message); return [] }
     if (!data || data.length === 0) return []
@@ -349,7 +351,7 @@ export async function getLeadsByAgent(agentId: string): Promise<Lead[]> {
       .from('leads')
       .select('*')
       .eq('found_by', agentId)
-      .order('created_at', { ascending: false })
+      .order('lead_number', { ascending: false })
 
     if (error) { console.error('[Supabase:getLeadsByAgent] error:', error.message); return [] }
     if (!data || data.length === 0) return []

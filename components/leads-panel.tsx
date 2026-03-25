@@ -280,7 +280,8 @@ function AddLeadDialog({
       if (!res.ok) { setError(data.error ?? 'Error al crear'); return }
       const raw = data.lead
       const newLead: Lead = {
-        id: raw.id, clinicName: raw.clinic_name, location: raw.location ?? null,
+        id: raw.id, leadNumber: raw.lead_number ?? null,
+        clinicName: raw.clinic_name, location: raw.location ?? null,
         contactName: raw.contact_name ?? null, email: raw.email ?? null,
         phone: raw.phone ?? null, stage: raw.stage ?? 'new',
         assignedAgent: raw.assigned_agent ?? null, instagram: raw.instagram ?? null,
@@ -365,7 +366,7 @@ function AddLeadDialog({
 
 function LeadCard({ lead, rowNumber, onClick, onStageChange }: {
   lead: Lead
-  rowNumber: number
+  rowNumber: number | null
   onClick: () => void
   onStageChange: (id: string, stage: string) => Promise<void>
 }) {
@@ -387,9 +388,11 @@ function LeadCard({ lead, rowNumber, onClick, onStageChange }: {
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
           <div className="min-w-0 flex items-start gap-2">
-            <span className="mt-0.5 shrink-0 rounded bg-gray-700/70 px-1.5 py-0.5 text-[10px] font-mono font-medium text-gray-400">
-              #{rowNumber}
-            </span>
+            {rowNumber !== null && (
+              <span className="mt-0.5 shrink-0 rounded bg-gray-700/70 px-1.5 py-0.5 text-[10px] font-mono font-medium text-gray-400">
+                #{rowNumber}
+              </span>
+            )}
             <div className="min-w-0">
               <p className="font-semibold text-white truncate">{lead.clinicName}</p>
               {lead.location && (
@@ -509,7 +512,7 @@ export function LeadsPanel({ initialLeads }: { initialLeads: Lead[] }) {
       .sort((a, b) => {
         if (sortBy === 'score') return (b.leadScore ?? -1) - (a.leadScore ?? -1)
         if (sortBy === 'name') return a.clinicName.localeCompare(b.clinicName)
-        return b.createdAt.getTime() - a.createdAt.getTime()
+        return (b.leadNumber ?? 0) - (a.leadNumber ?? 0)
       })
   }, [leads, search, stageFilter, agentFilter, sortBy])
 
@@ -637,11 +640,11 @@ export function LeadsPanel({ initialLeads }: { initialLeads: Lead[] }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((lead, idx) => (
+          {filtered.map((lead) => (
             <LeadCard
               key={lead.id}
               lead={lead}
-              rowNumber={idx + 1}
+              rowNumber={lead.leadNumber}
               onClick={() => setSelectedLead(lead)}
               onStageChange={handleStageChange}
             />
