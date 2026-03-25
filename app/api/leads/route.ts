@@ -8,7 +8,7 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('leads')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('lead_number', { ascending: false, nullsFirst: false });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -20,11 +20,11 @@ export async function GET() {
 // POST /api/leads - Create a new lead
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { clinic_name, location, contact_name, email, phone, notes } = body;
+  const { clinic_name, location, contact_name, email, phone, notes, instagram, address, stage } = body;
 
-  if (!clinic_name || !email) {
+  if (!clinic_name) {
     return NextResponse.json(
-      { error: 'clinic_name y email son requeridos' },
+      { error: 'clinic_name es requerido' },
       { status: 400 }
     );
   }
@@ -33,12 +33,14 @@ export async function POST(request: NextRequest) {
     .from('leads')
     .insert({
       clinic_name,
-      location,
-      contact_name,
-      email,
-      phone,
-      notes,
-      stage: 'prospecto',
+      location:     location     ?? null,
+      contact_name: contact_name ?? null,
+      email:        email        ?? null,
+      phone:        phone        ?? null,
+      notes:        notes        ?? null,
+      instagram:    instagram    ?? null,
+      address:      address      ?? null,
+      stage:        stage        ?? 'new',
     })
     .select()
     .single();

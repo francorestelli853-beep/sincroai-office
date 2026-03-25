@@ -310,7 +310,7 @@ export interface Lead {
 function mapLead(row: DbRow): Lead {
   return {
     id:            row.id as string,
-    leadNumber:    (row.lead_number ?? null) as number | null,
+    leadNumber:    row.lead_number != null ? Number(row.lead_number) : null,
     clinicName:    (row.clinic_name ?? '') as string,
     location:      (row.location ?? null) as string | null,
     contactName:   (row.contact_name ?? null) as string | null,
@@ -334,7 +334,13 @@ export async function getLeads(): Promise<Lead[]> {
     const { data, error } = await getSupabase()
       .from('leads')
       .select('*')
-      .order('lead_number', { ascending: false })
+      .order('lead_number', { ascending: false, nullsFirst: false })
+
+    console.log('[Supabase:getLeads]', {
+      error:       error ? { code: error.code, message: error.message } : null,
+      rowCount:    data?.length ?? 0,
+      leadNumbers: data?.map((r) => `${r.id}:${r.lead_number}`) ?? [],
+    })
 
     if (error) { console.error('[Supabase:getLeads] error:', error.message); return [] }
     if (!data || data.length === 0) return []
@@ -351,7 +357,7 @@ export async function getLeadsByAgent(agentId: string): Promise<Lead[]> {
       .from('leads')
       .select('*')
       .eq('found_by', agentId)
-      .order('lead_number', { ascending: false })
+      .order('lead_number', { ascending: false, nullsFirst: false })
 
     if (error) { console.error('[Supabase:getLeadsByAgent] error:', error.message); return [] }
     if (!data || data.length === 0) return []
