@@ -57,6 +57,38 @@ export async function PATCH(
       category:   'task',
       timestamp:  new Date().toISOString(),
     })
+
+    // Webhook a Vera cuando el lead pasa a "closed"
+    if (body.stage === 'closed' && lead) {
+      try {
+        const webhookRes = await fetch('http://172.18.0.3:5678/webhook/vera-onboarding', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_type: 'client_closed',
+            agent_id:   'vera',
+            agent_name: 'Vera',
+            data: {
+              lead_id:      lead.id,
+              clinic_name:  lead.clinic_name  ?? null,
+              contact_name: lead.contact_name ?? null,
+              email:        lead.email        ?? null,
+              phone:        lead.phone        ?? null,
+              instagram:    lead.instagram    ?? null,
+              address:      lead.address      ?? null,
+            },
+          }),
+        })
+        if (!webhookRes.ok) {
+          console.warn('[vera-onboarding webhook] respuesta no-OK:', webhookRes.status, await webhookRes.text())
+        } else {
+          console.log('[vera-onboarding webhook] enviado OK para lead:', lead.id)
+        }
+      } catch (webhookErr) {
+        // No fallar la respuesta al cliente si el webhook no está disponible
+        console.error('[vera-onboarding webhook] error de red:', (webhookErr as Error).message)
+      }
+    }
   }
 
   return NextResponse.json({ lead })
