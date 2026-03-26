@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{CLINIC_NAME}} — {{CLINIC_TAGLINE}}">
+  <title>{{CLINIC_NAME}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================
+       SINCROAI · TEMPLATE DE CLÍNICA ESTÉTICA v1
+       ================================================================
+       Personalización: buscar y reemplazar las variables {{VAR}}
+       Colores: modificar los valores en :root (sección de variables)
+    ================================================================ */
+
+    /* ── Reset ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    ul { list-style: none; }
+    button { cursor: pointer; border: none; background: none; font-family: inherit; }
+    input, select, textarea { font-family: inherit; }
+
+    /* ── Variables ───────────────────────────────────────────────── */
+    :root {
+      /* COLORES — Reemplazar con los colores de la clínica */
+      --primary:       {{PRIMARY_COLOR}};
+      --primary-dark:  {{PRIMARY_DARK}};
+      --accent:        {{ACCENT_COLOR}};
+
+      /* Sistema base — no modificar */
+      --text:          #1A1614;
+      --text-mid:      #5A524C;
+      --text-muted:    #7D7068;
+      --text-light:    #B3A89E;
+      --bg:            #FAF7F4;
+      --bg-alt:        #F2EDE6;
+      --bg-dark:       #1E1C1A;
+      --bg-dark-2:     #272320;
+      --border:        #E3D9D0;
+      --border-light:  #EDE7E0;
+      --border-dark:   #2E2A27;
+      --white:         #FFFFFF;
+      --gold:          #C9962E;
+      --whatsapp:      #25D366;
+
+      --font-serif:    'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      --font-sans:     'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      --nav-h:         72px;
+      --max-w:         1160px;
+      --radius:        4px;
+      --ease:          cubic-bezier(0.4, 0, 0.2, 1);
+      --t:             220ms var(--ease);
+    }
+
+    /* ── Contenedor ──────────────────────────────────────────────── */
+    .container {
+      width: 100%;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+    section { padding: 112px 0; }
+
+    /* ── Cabecera de sección ─────────────────────────────────────── */
+    .section-label {
+      display: inline-block;
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(32px, 3.2vw, 46px);
+      font-weight: 400;
+      letter-spacing: -0.025em;
+      line-height: 1.12;
+      color: var(--text);
+    }
+    .section-title em { font-style: italic; color: var(--primary-dark); }
+    .section-desc {
+      margin-top: 18px;
+      font-size: 16.5px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-muted);
+    }
+    .section-hd { margin-bottom: 64px; }
+    .section-hd.centered { text-align: center; }
+    .section-hd.centered .section-desc { max-width: 500px; margin-left: auto; margin-right: auto; }
+
+    /* ── Botones ─────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 14px 30px;
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+      border-radius: var(--radius);
+      transition: background var(--t), color var(--t), border-color var(--t), transform var(--t), box-shadow var(--t);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(1px) !important; }
+    .btn-primary {
+      background: var(--primary);
+      color: var(--bg);
+      border: 1.5px solid var(--primary);
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-outline:hover {
+      border-color: var(--text-mid);
+      transform: translateY(-1px);
+    }
+    .btn-dark {
+      background: var(--text);
+      color: var(--white);
+      border: 1.5px solid var(--text);
+    }
+    .btn-dark:hover {
+      background: #2E2A27;
+      border-color: #2E2A27;
+      transform: translateY(-1px);
+    }
+    .btn-sm { padding: 10px 20px; font-size: 13px; }
+    .btn-full { width: 100%; }
+
+    /* ── Navegación ──────────────────────────────────────────────── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 800;
+      height: var(--nav-h);
+      border-bottom: 1px solid transparent;
+      transition: background var(--t), border-color var(--t), backdrop-filter var(--t);
+    }
+    .nav.scrolled {
+      background: rgba(250, 247, 244, 0.90);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom-color: var(--border);
+    }
+    .nav-inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .nav-logo {
+      font-family: var(--font-serif);
+      font-size: 23px;
+      font-weight: 500;
+      font-style: italic;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+    }
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      transition: color var(--t);
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    /* Hamburger */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      padding: 6px;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--text);
+      transition: transform var(--t), opacity var(--t);
+    }
+    /* Mobile overlay */
+    .nav-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: var(--bg-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 300ms var(--ease);
+    }
+    .nav-overlay.open { opacity: 1; pointer-events: all; }
+    .nav-overlay-links {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 48px;
+    }
+    .nav-overlay-links a {
+      font-family: var(--font-serif);
+      font-size: 42px;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      color: rgba(255,255,255,0.7);
+      transition: color var(--t);
+      padding: 6px 0;
+    }
+    .nav-overlay-links a:hover { color: var(--white); }
+    .nav-overlay-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-overlay-close {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.4);
+      transition: color var(--t);
+    }
+    .nav-overlay-close:hover { color: rgba(255,255,255,0.9); }
+
+    /* ── Hero ────────────────────────────────────────────────────── */
+    .hero {
+      display: grid;
+      grid-template-columns: 54fr 46fr;
+      min-height: 100vh;
+      overflow: hidden;
+      padding: 0;
+    }
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: calc(var(--nav-h) + 64px) 56px 80px 40px;
+      max-width: calc(var(--max-w) * 0.54 + 40px);
+      margin-left: auto;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+    .hero-badge-line {
+      width: 28px;
+      height: 1px;
+      background: var(--primary);
+    }
+    .hero-badge-text {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .hero-headline {
+      font-family: var(--font-serif);
+      font-size: clamp(46px, 5.2vw, 76px);
+      font-weight: 400;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 26px;
+    }
+    .hero-headline em { font-style: italic; color: var(--primary-dark); }
+    .hero-subtitle {
+      font-size: 16.5px;
+      font-weight: 300;
+      line-height: 1.78;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin-bottom: 44px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-trust {
+      margin-top: 56px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-trust-stars {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .hero-trust-stars span { color: var(--gold); font-size: 15px; line-height: 1; }
+    .hero-trust-copy {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    .hero-trust-copy strong { font-weight: 500; color: var(--text); }
+    .hero-trust-sep {
+      width: 1px;
+      height: 16px;
+      background: var(--border);
+    }
+    /* Visual (foto) */
+    .hero-visual {
+      position: relative;
+      background: var(--bg-alt);
+      overflow: hidden;
+    }
+    .hero-photo-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-photo-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-photo-frame {
+      width: 80px;
+      height: 80px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-photo-frame svg { width: 28px; height: 28px; color: var(--border); }
+    .hero-photo-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    /* Available strip */
+    .hero-available {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border-light);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-available-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #52B788;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.2);
+    }
+    .hero-available-text {
+      font-size: 12.5px;
+      font-weight: 400;
+      color: var(--text-mid);
+    }
+    .hero-available-text strong { font-weight: 500; }
+
+    /* ── Servicios ───────────────────────────────────────────────── */
+    .services { background: var(--bg-alt); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      gap: 0;
+    }
+    .service-card {
+      padding: 38px 32px;
+      background: var(--bg-alt);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      transition: background var(--t);
+      cursor: default;
+    }
+    .service-card:hover { background: var(--white); }
+    .service-card:nth-child(3n) { border-right: none; }
+    .service-name {
+      font-family: var(--font-serif);
+      font-size: 21px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+    .service-desc {
+      font-size: 13.5px;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--text-muted);
+      min-height: 58px;
+      margin-bottom: 24px;
+    }
+    .service-meta {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .service-price {
+      font-size: 19px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .service-price-currency {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-right: 2px;
+    }
+    .service-duration {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    /* Estados de carga */
+    .services-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 40px;
+      background: var(--bg-alt);
+    }
+    .services-state-title {
+      font-family: var(--font-serif);
+      font-size: 21px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--text-muted);
+    }
+    .services-state-sub {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    /* Skeleton loader */
+    @keyframes shimmer {
+      0% { background-position: -600px 0; }
+      100% { background-position: 600px 0; }
+    }
+    .skel {
+      background: linear-gradient(90deg, var(--bg-alt) 25%, #E8E0D6 50%, var(--bg-alt) 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 3px;
+    }
+    .skel-card { padding: 38px 32px; background: var(--bg-alt); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .skel-line { height: 14px; margin-bottom: 10px; }
+    .skel-line.lg { height: 22px; width: 70%; }
+    .skel-line.sm { height: 12px; width: 45%; }
+    .skel-line.full { width: 100%; }
+    .skel-line.w80 { width: 80%; }
+
+    /* ── Reservar Turno ──────────────────────────────────────────── */
+    .booking { background: var(--bg); }
+    .booking-grid {
+      display: grid;
+      grid-template-columns: 42fr 58fr;
+      gap: 88px;
+      align-items: start;
+    }
+    .booking-left {
+      position: sticky;
+      top: calc(var(--nav-h) + 40px);
+    }
+    .booking-benefits {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .booking-benefit {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .benefit-check {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      margin-top: 1px;
+    }
+    .booking-benefit-text {
+      font-size: 14.5px;
+      font-weight: 300;
+      line-height: 1.65;
+      color: var(--text-muted);
+    }
+    .booking-benefit-text strong { color: var(--text); font-weight: 400; }
+    /* Formulario */
+    .booking-form-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 48px 44px;
+    }
+    .booking-form-title {
+      font-family: var(--font-serif);
+      font-size: 26px;
+      font-weight: 400;
+      letter-spacing: -0.015em;
+      color: var(--text);
+      margin-bottom: 36px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .form-group { margin-bottom: 24px; }
+    .form-label {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 9px;
+    }
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid var(--border);
+      padding: 7px 0 10px;
+      font-size: 15px;
+      font-weight: 300;
+      color: var(--text);
+      outline: none;
+      border-radius: 0;
+      -webkit-appearance: none;
+      transition: border-color var(--t);
+    }
+    .form-input::placeholder { color: var(--text-light); font-weight: 300; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-bottom-color: var(--primary);
+    }
+    .form-select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7' fill='none'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%237D7068' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 2px center;
+      padding-right: 20px;
+    }
+    .form-select option { background: var(--white); }
+    .form-select:disabled { opacity: 0.45; cursor: not-allowed; }
+    .form-textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 3px;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 80px;
+    }
+    .form-textarea:focus { border-color: var(--primary); }
+    .form-note {
+      margin-top: 10px;
+      font-size: 11.5px;
+      color: var(--text-light);
+    }
+    .form-submit { margin-top: 32px; }
+    .form-error-msg {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #B03030;
+      display: none;
+    }
+    .form-error-msg.show { display: block; }
+
+    /* ── Testimoniales ───────────────────────────────────────────── */
+    .testimonials { background: var(--bg-alt); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--border);
+      gap: 0;
+    }
+    .testimonial-card {
+      padding: 42px 36px;
+      background: var(--bg-alt);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .testimonial-card:last-child { border-right: none; }
+    .testimonial-stars {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 24px;
+    }
+    .testimonial-stars span { color: var(--gold); font-size: 16px; line-height: 1; }
+    .testimonial-quote {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.68;
+      color: var(--text);
+      flex: 1;
+      margin-bottom: 30px;
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    .testimonial-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+    .testimonial-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .testimonial-service { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .testimonials-cta { margin-top: 48px; text-align: center; }
+
+    /* ── Contacto ────────────────────────────────────────────────── */
+    .contact { background: var(--bg); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 44fr 56fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .contact-items { display: flex; flex-direction: column; }
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      transition: opacity var(--t);
+    }
+    .contact-item:first-child { border-top: 1px solid var(--border); }
+    .contact-item:hover { opacity: 0.72; }
+    .contact-item-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--bg-alt);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .contact-item-icon svg { width: 18px; height: 18px; }
+    .contact-item-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .contact-item-value {
+      font-size: 14.5px;
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .contact-item-value a { transition: color var(--t); }
+    .contact-item-value a:hover { color: var(--primary-dark); }
+    .contact-map-wrap {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      min-height: 420px;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-map-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .contact-map-placeholder-icon { color: var(--border); }
+    .contact-map-placeholder-text {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .contact-map-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    .footer {
+      background: var(--bg-dark);
+      padding: 72px 0 40px;
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1fr;
+      gap: 56px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border-dark);
+    }
+    .footer-logo {
+      font-family: var(--font-serif);
+      font-size: 25px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--white);
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+    .footer-tagline {
+      font-size: 13.5px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.7;
+      max-width: 260px;
+    }
+    .footer-col-title {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      margin-bottom: 20px;
+    }
+    .footer-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+    .footer-nav a {
+      font-size: 13.5px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.5);
+      transition: color var(--t);
+    }
+    .footer-nav a:hover { color: rgba(255,255,255,0.88); }
+    .footer-hours { display: flex; flex-direction: column; gap: 9px; }
+    .footer-hour-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      font-weight: 300;
+    }
+    .footer-hour-row .day { color: rgba(255,255,255,0.3); }
+    .footer-hour-row .time { color: rgba(255,255,255,0.55); }
+    .footer-bottom {
+      padding-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-copy { font-size: 12.5px; color: rgba(255,255,255,0.22); }
+    .footer-powered { font-size: 12.5px; color: rgba(255,255,255,0.28); }
+    .footer-powered a { color: rgba(255,255,255,0.45); transition: color var(--t); }
+    .footer-powered a:hover { color: var(--primary); }
+
+    /* ── FABs ────────────────────────────────────────────────────── */
+    .fabs {
+      position: fixed;
+      bottom: 26px;
+      right: 26px;
+      z-index: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .fab {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.16);
+      transition: transform var(--t), box-shadow var(--t);
+      flex-shrink: 0;
+    }
+    .fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    .fab:active { transform: translateY(0); }
+    .fab-chat { background: var(--primary); }
+    .fab-wa { background: var(--whatsapp); }
+    .fab svg { width: 24px; height: 24px; }
+
+    /* ── Chatbot ─────────────────────────────────────────────────── */
+    .chat-window {
+      position: fixed;
+      bottom: 150px;
+      right: 26px;
+      z-index: 701;
+      width: 330px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.11);
+      display: flex;
+      flex-direction: column;
+      max-height: 500px;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity var(--t), transform var(--t);
+    }
+    .chat-window.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+    .chat-header {
+      background: var(--bg-dark);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .chat-header-left { display: flex; align-items: center; gap: 10px; }
+    .chat-header-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--whatsapp);
+      box-shadow: 0 0 0 2px rgba(37,211,102,0.25);
+    }
+    .chat-header-name { font-size: 13.5px; font-weight: 500; color: var(--white); }
+    .chat-header-status { font-size: 11px; color: rgba(255,255,255,0.38); margin-top: 1px; }
+    .chat-header-close { color: rgba(255,255,255,0.38); transition: color var(--t); }
+    .chat-header-close:hover { color: rgba(255,255,255,0.85); }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #F6F2EE;
+    }
+    .chat-msg {
+      max-width: 88%;
+      padding: 9px 13px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+    .chat-msg-bot {
+      align-self: flex-start;
+      background: var(--white);
+      color: var(--text);
+      border-bottom-left-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .chat-msg-user {
+      align-self: flex-end;
+      background: var(--primary);
+      color: var(--white);
+      border-bottom-right-radius: 3px;
+    }
+    .chat-quick {
+      padding: 8px 14px 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #F6F2EE;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chat-qr {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 5px 12px;
+      font-size: 12px;
+      color: var(--text-mid);
+      background: var(--white);
+      transition: background var(--t), color var(--t), border-color var(--t);
+    }
+    .chat-qr:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--white);
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 7px 13px;
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color var(--t);
+    }
+    .chat-input:focus { border-color: var(--primary); }
+    .chat-send {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background var(--t);
+    }
+    .chat-send:hover { background: var(--primary-dark); }
+    .chat-send svg { width: 14px; height: 14px; color: white; }
+
+    /* ── Overlay de éxito ────────────────────────────────────────── */
+    .success-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(250,247,244,0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 300ms var(--ease);
+    }
+    .success-overlay.show { opacity: 1; pointer-events: all; }
+    .success-box {
+      text-align: center;
+      max-width: 420px;
+      padding: 24px;
+    }
+    .success-circle {
+      width: 66px; height: 66px;
+      border-radius: 50%;
+      background: var(--bg-alt);
+      border: 1.5px solid var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+    }
+    .success-circle svg { width: 28px; height: 28px; color: var(--primary); }
+    .success-title {
+      font-family: var(--font-serif);
+      font-size: 38px;
+      font-weight: 400;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .success-text {
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    /* ── Animaciones ─────────────────────────────────────────────── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity 0.65s var(--ease), transform 0.65s var(--ease);
+    }
+    .fade-up.in { opacity: 1; transform: translateY(0); }
+    .d1 { transition-delay: 0.08s; }
+    .d2 { transition-delay: 0.16s; }
+    .d3 { transition-delay: 0.24s; }
+    .d4 { transition-delay: 0.32s; }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 1080px) {
+      .container { padding: 0 32px; }
+      .hero-content { padding-right: 40px; }
+      .booking-grid { grid-template-columns: 1fr; gap: 56px; }
+      .booking-left { position: static; }
+      .contact-grid { grid-template-columns: 1fr; gap: 48px; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 40px; }
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 20px; }
+      section { padding: 72px 0; }
+      /* Nav */
+      .nav-links, .nav-right { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-inner { padding: 0 20px; }
+      /* Hero */
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-content { padding: calc(var(--nav-h) + 40px) 20px 52px; max-width: 100%; margin: 0; }
+      .hero-visual { min-height: 260px; display: block; }
+      /* Services */
+      .services-grid { grid-template-columns: 1fr 1fr; }
+      .service-card:nth-child(3n) { border-right: 1px solid var(--border); }
+      .service-card:nth-child(2n) { border-right: none; }
+      /* Booking */
+      .booking-form-wrap { padding: 32px 22px; }
+      .form-row { grid-template-columns: 1fr; }
+      /* Testimonials */
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .testimonial-card { border-right: none; border-bottom: 1px solid var(--border); }
+      .testimonial-card:last-child { border-bottom: none; }
+      /* Footer */
+      .footer-top { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; gap: 10px; text-align: center; }
+      /* Chat window */
+      .chat-window { right: 0; left: 0; bottom: 0; width: 100%; border-radius: 14px 14px 0 0; max-height: 75vh; }
+    }
+
+    @media (max-width: 520px) {
+      .hero-headline { font-size: 40px; }
+      .hero-actions { flex-direction: column; }
+      .hero-actions .btn { width: 100%; }
+      .services-grid { grid-template-columns: 1fr; }
+      .service-card:nth-child(2n) { border-right: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================
+     NAVEGACIÓN
+================================================================ -->
+<header class="nav" id="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#inicio" class="nav-logo">{{CLINIC_NAME}}</a>
+      <nav class="nav-links">
+        <a href="#servicios">Servicios</a>
+        <a href="#reservar">Turnos</a>
+        <a href="#opiniones">Opiniones</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+      <div class="nav-right">
+        <a href="#reservar" class="btn btn-primary btn-sm">Reservar turno</a>
+      </div>
+      <button class="nav-hamburger" id="navHamburger" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Menú mobile fullscreen -->
+<div class="nav-overlay" id="navOverlay" role="dialog" aria-modal="true">
+  <button class="nav-overlay-close" id="navOverlayClose" aria-label="Cerrar menú">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M3 3l16 16M19 3L3 19"/>
+    </svg>
+  </button>
+  <nav class="nav-overlay-links">
+    <a href="#servicios">Servicios</a>
+    <a href="#reservar">Turnos</a>
+    <a href="#opiniones">Opiniones</a>
+    <a href="#contacto">Contacto</a>
+  </nav>
+  <div class="nav-overlay-actions">
+    <a href="#reservar" class="btn btn-primary">Reservar turno</a>
+    <a id="overlayWhatsApp" href="#" class="btn btn-outline" style="color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2);">Consultar por WhatsApp</a>
+  </div>
+</div>
+
+<!-- ================================================================
+     HERO
+================================================================ -->
+<main>
+<section class="hero" id="inicio">
+  <!-- Columna de contenido -->
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-line"></span>
+      <span class="hero-badge-text">{{CLINIC_BADGE}}</span>
+    </div>
+
+    <h1 class="hero-headline">
+      Expertos en bienestar<br><em>y estética avanzada</em>
+      <!-- Personalizar este texto y la palabra en cursiva -->
+    </h1>
+
+    <p class="hero-subtitle">{{CLINIC_TAGLINE}}</p>
+
+    <div class="hero-actions">
+      <a href="#reservar" class="btn btn-primary">Reservar turno</a>
+      <a id="heroWhatsApp" href="#" class="btn btn-outline">Consultar por WhatsApp</a>
+    </div>
+
+    <div class="hero-trust">
+      <div class="hero-trust-stars">
+        <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+      </div>
+      <p class="hero-trust-copy"><strong>4.9</strong> &middot; +500 pacientes</p>
+      <div class="hero-trust-sep"></div>
+      <p class="hero-trust-copy">Atenci&oacute;n personalizada</p>
+    </div>
+  </div>
+
+  <!-- Columna visual -->
+  <div class="hero-visual">
+    <div class="hero-photo-placeholder">
+      <div class="hero-photo-inner">
+        <div class="hero-photo-frame">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="1"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <p class="hero-photo-label">Fotograf&iacute;a de la cl&iacute;nica</p>
+      </div>
+    </div>
+    <!-- Available slots strip -->
+    <div class="hero-available">
+      <div class="hero-available-dot"></div>
+      <p class="hero-available-text">
+        <strong>Turnos disponibles</strong> esta semana &mdash; reserv&aacute; ahora
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     SERVICIOS
+================================================================ -->
+<section id="servicios" class="services">
+  <div class="container">
+    <div class="section-hd fade-up">
+      <span class="section-label">Tratamientos</span>
+      <h2 class="section-title">Nuestros <em>servicios</em></h2>
+      <p class="section-desc">Cada tratamiento es dise&ntilde;ado a medida, con los mejores materiales y la tecnolog&iacute;a m&aacute;s avanzada del mercado.</p>
+    </div>
+
+    <div class="services-grid" id="servicesGrid">
+      <!-- Skeleton loader inicial -->
+      <div class="skel-card"><div class="skel skel-line lg"></div><div class="skel skel-line full" style="margin:14px 0 8px"></div><div class="skel skel-line w80"></div></div>
+      <div class="skel-card"><div class="skel skel-line lg"></div><div class="skel skel-line full" style="margin:14px 0 8px"></div><div class="skel skel-line w80"></div></div>
+      <div class="skel-card" style="border-right:none"><div class="skel skel-line lg"></div><div class="skel skel-line full" style="margin:14px 0 8px"></div><div class="skel skel-line w80"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     RESERVAR TURNO
+================================================================ -->
+<section id="reservar" class="booking">
+  <div class="container">
+    <div class="booking-grid">
+      <!-- Izquierda: info + beneficios -->
+      <div class="booking-left fade-up">
+        <span class="section-label">Agenda online</span>
+        <h2 class="section-title">Reserv&aacute; tu<br><em>turno</em></h2>
+        <p class="section-desc" style="max-width:380px;">Selecion&aacute; el tratamiento y el horario que mejor te quede. Confirm&aacute;s al instante, sin llamadas ni esperas.</p>
+
+        <div class="booking-benefits">
+          <div class="booking-benefit">
+            <svg class="benefit-check" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9.5" stroke="{{PRIMARY_COLOR}}"/>
+              <path d="M5.5 10l3.2 3.2 5.8-6.4" stroke="{{PRIMARY_COLOR}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="booking-benefit-text"><strong>Confirmaci&oacute;n autom&aacute;tica</strong> por WhatsApp en segundos</p>
+          </div>
+          <div class="booking-benefit">
+            <svg class="benefit-check" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9.5" stroke="{{PRIMARY_COLOR}}"/>
+              <path d="M5.5 10l3.2 3.2 5.8-6.4" stroke="{{PRIMARY_COLOR}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="booking-benefit-text"><strong>Recordatorio 24hs antes</strong> para que no te olvid&eacute;s</p>
+          </div>
+          <div class="booking-benefit">
+            <svg class="benefit-check" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9.5" stroke="{{PRIMARY_COLOR}}"/>
+              <path d="M5.5 10l3.2 3.2 5.8-6.4" stroke="{{PRIMARY_COLOR}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="booking-benefit-text"><strong>Cancel&aacute; o reprogramá</strong> cuando quieras</p>
+          </div>
+          <div class="booking-benefit">
+            <svg class="benefit-check" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="9.5" stroke="{{PRIMARY_COLOR}}"/>
+              <path d="M5.5 10l3.2 3.2 5.8-6.4" stroke="{{PRIMARY_COLOR}}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="booking-benefit-text"><strong>Historial completo</strong> de tus tratamientos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Derecha: formulario -->
+      <div class="fade-up d2">
+        <div class="booking-form-wrap">
+          <p class="booking-form-title">Completá tus datos</p>
+
+          <form id="bookingForm" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="fname">Nombre completo</label>
+                <input class="form-input" type="text" id="fname" name="name" placeholder="Tu nombre" required autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="fphone">Tel&eacute;fono</label>
+                <input class="form-input" type="tel" id="fphone" name="phone" placeholder="+54 9 11..." required autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="femail">Email</label>
+              <input class="form-input" type="email" id="femail" name="email" placeholder="correo@ejemplo.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fservice">Servicio</label>
+              <select class="form-select" id="fservice" name="service" required>
+                <option value="" disabled selected>Seleccion&aacute; un tratamiento</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="fdate">Fecha</label>
+                <input class="form-input" type="date" id="fdate" name="date" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ftime">Horario</label>
+                <select class="form-select" id="ftime" name="time" required disabled>
+                  <option value="" disabled selected>Prim&eacute;ro elig&iacute; fecha</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fnotes">Notas adicionales</label>
+              <textarea class="form-textarea" id="fnotes" name="notes" placeholder="Alergias, consultas o indicaciones especiales&hellip;" rows="3"></textarea>
+            </div>
+
+            <p class="form-note">Al reservar aceptás que te contactemos por WhatsApp para confirmar tu turno.</p>
+
+            <div class="form-submit">
+              <button type="submit" class="btn btn-primary btn-full" id="bookingSubmit">Confirmar reserva</button>
+            </div>
+            <p class="form-error-msg" id="formError"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     OPINIONES
+================================================================ -->
+<section id="opiniones" class="testimonials">
+  <div class="container">
+    <div class="section-hd centered fade-up">
+      <span class="section-label">Opiniones</span>
+      <h2 class="section-title">Lo que dicen<br>nuestros <em>pacientes</em></h2>
+    </div>
+
+    <div class="testimonials-grid" id="testimonialsGrid">
+      <!-- Renderizado por JS desde config -->
+    </div>
+
+    <div class="testimonials-cta fade-up">
+      <a id="googleReviewsBtn" href="{{GOOGLE_REVIEWS_URL}}" target="_blank" rel="noopener" class="btn btn-outline">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Ver opiniones en Google
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     CONTACTO
+================================================================ -->
+<section id="contacto" class="contact">
+  <div class="container">
+    <div class="section-hd fade-up">
+      <span class="section-label">Cont&aacute;ctanos</span>
+      <h2 class="section-title">Est&aacute;mos<br>para <em>ayudarte</em></h2>
+    </div>
+
+    <div class="contact-grid">
+      <!-- Izquierda: datos de contacto -->
+      <div class="contact-items fade-up">
+
+        <!-- WhatsApp -->
+        <a class="contact-item" id="contactWA" href="#">
+          <div class="contact-item-icon">
+            <!-- Logo oficial WhatsApp -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" fill="#25D366"/>
+            </svg>
+          </div>
+          <div>
+            <p class="contact-item-label">WhatsApp</p>
+            <p class="contact-item-value" id="contactWADisplay">{{CLINIC_WHATSAPP_DISPLAY}}</p>
+          </div>
+        </a>
+
+        <!-- Instagram -->
+        <a class="contact-item" id="contactIG" href="https://instagram.com/{{CLINIC_INSTAGRAM_HANDLE}}" target="_blank" rel="noopener">
+          <div class="contact-item-icon">
+            <!-- Logo oficial Instagram (simplified) -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="ig-grad" cx="30%" cy="107%" r="150%">
+                  <stop offset="0%" stop-color="#fdf497"/>
+                  <stop offset="5%" stop-color="#fdf497"/>
+                  <stop offset="45%" stop-color="#fd5949"/>
+                  <stop offset="60%" stop-color="#d6249f"/>
+                  <stop offset="90%" stop-color="#285AEB"/>
+                </radialGradient>
+              </defs>
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="url(#ig-grad)"/>
+              <path d="M12 7a5 5 0 100 10A5 5 0 0012 7zm0 8.25A3.25 3.25 0 1112 8.75a3.25 3.25 0 010 6.5z" fill="white"/>
+              <circle cx="17.5" cy="6.5" r="1.25" fill="white"/>
+            </svg>
+          </div>
+          <div>
+            <p class="contact-item-label">Instagram</p>
+            <p class="contact-item-value">@{{CLINIC_INSTAGRAM_HANDLE}}</p>
+          </div>
+        </a>
+
+        <!-- Teléfono -->
+        <a class="contact-item" id="contactPhone" href="tel:{{CLINIC_PHONE}}">
+          <div class="contact-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="contact-item-label">Tel&eacute;fono</p>
+            <p class="contact-item-value" id="contactPhoneDisplay">{{CLINIC_PHONE_DISPLAY}}</p>
+          </div>
+        </a>
+
+        <!-- Email -->
+        <a class="contact-item" href="mailto:{{CLINIC_EMAIL}}">
+          <div class="contact-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div>
+            <p class="contact-item-label">Email</p>
+            <p class="contact-item-value">{{CLINIC_EMAIL}}</p>
+          </div>
+        </a>
+
+        <!-- Dirección -->
+        <div class="contact-item" style="cursor:default;">
+          <div class="contact-item-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <p class="contact-item-label">Direcci&oacute;n</p>
+            <p class="contact-item-value">{{CLINIC_ADDRESS}}</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Derecha: mapa -->
+      <div class="contact-map-wrap fade-up d2">
+        <!-- Reemplazar por el iframe de Google Maps del cliente -->
+        <!-- <iframe src="https://www.google.com/maps/embed?pb=..." allowfullscreen loading="lazy"></iframe> -->
+        <div class="contact-map-placeholder">
+          <svg class="contact-map-placeholder-icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--border)" stroke-width="1">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <p class="contact-map-placeholder-text">Mapa de Google</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ================================================================
+     FOOTER
+================================================================ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <!-- Col 1: marca -->
+      <div>
+        <p class="footer-logo">{{CLINIC_NAME}}</p>
+        <p class="footer-tagline">{{CLINIC_TAGLINE}}</p>
+      </div>
+      <!-- Col 2: navegación -->
+      <div>
+        <p class="footer-col-title">Navegaci&oacute;n</p>
+        <nav class="footer-nav">
+          <a href="#servicios">Servicios</a>
+          <a href="#reservar">Reservar turno</a>
+          <a href="#opiniones">Opiniones</a>
+          <a href="#contacto">Contacto</a>
+        </nav>
+      </div>
+      <!-- Col 3: horarios -->
+      <div>
+        <p class="footer-col-title">Horarios</p>
+        <div class="footer-hours">
+          <div class="footer-hour-row"><span class="day">Lunes &mdash; Viernes</span><span class="time">{{HOURS_WEEKDAY}}</span></div>
+          <div class="footer-hour-row"><span class="day">S&aacute;bados</span><span class="time">{{HOURS_SATURDAY}}</span></div>
+          <div class="footer-hour-row"><span class="day">Domingos</span><span class="time">Cerrado</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">&copy; <span id="footerYear"></span> {{CLINIC_NAME}}. Todos los derechos reservados.</p>
+      <p class="footer-powered">Potenciado por <a href="https://sincroai.net" target="_blank" rel="noopener">SincroAI</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- ================================================================
+     FABs (WhatsApp + Chat)
+================================================================ -->
+<div class="fabs">
+  <!-- Chat -->
+  <button class="fab fab-chat" id="chatToggle" aria-label="Abrir chat">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+  </button>
+  <!-- WhatsApp -->
+  <a class="fab fab-wa" id="fabWA" href="#" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">
+    <svg viewBox="0 0 24 24" fill="white">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+  </a>
+</div>
+
+<!-- ================================================================
+     VENTANA DE CHAT
+================================================================ -->
+<div class="chat-window" id="chatWindow" role="dialog" aria-label="Chat con la cl&iacute;nica">
+  <div class="chat-header">
+    <div class="chat-header-left">
+      <div class="chat-header-dot"></div>
+      <div>
+        <p class="chat-header-name" id="chatHeaderName">{{CLINIC_NAME}}</p>
+        <p class="chat-header-status">En l&iacute;nea ahora</p>
+      </div>
+    </div>
+    <button class="chat-header-close" id="chatClose" aria-label="Cerrar chat">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M2 2l14 14M16 2L2 16"/>
+      </svg>
+    </button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-quick" id="chatQuick">
+    <button class="chat-qr" data-intent="precios">Precios</button>
+    <button class="chat-qr" data-intent="servicios">Servicios</button>
+    <button class="chat-qr" data-intent="horarios">Horarios</button>
+    <button class="chat-qr" data-intent="turno">Sacar turno</button>
+    <button class="chat-qr" data-intent="ubicacion">D&oacute;nde est&aacute;n</button>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Escrib&iacute; tu consulta&hellip;" autocomplete="off">
+    <button class="chat-send" id="chatSend" aria-label="Enviar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ================================================================
+     OVERLAY DE ÉXITO
+================================================================ -->
+<div class="success-overlay" id="successOverlay" role="dialog" aria-modal="true">
+  <div class="success-box">
+    <div class="success-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h2 class="success-title">Turno confirmado</h2>
+    <p class="success-text" id="successText">Recibimos tu solicitud. Te enviamos la confirmaci&oacute;n por WhatsApp en los pr&oacute;ximos minutos.</p>
+    <button class="btn btn-outline" onclick="document.getElementById('successOverlay').classList.remove('show')">Volver al inicio</button>
+  </div>
+</div>
+
+<!-- ================================================================
+     JAVASCRIPT
+================================================================ -->
+<script>
+/* ================================================================
+   CONFIGURACIÓN — Reemplazar todos los {{VAR}} antes de deployar
+================================================================ */
+const CONFIG = {
+  clinicName:       '{{CLINIC_NAME}}',
+  clinicTagline:    '{{CLINIC_TAGLINE}}',
+  whatsapp:         '{{CLINIC_WHATSAPP}}',        // ej: 5491112345678
+  whatsappDisplay:  '{{CLINIC_WHATSAPP_DISPLAY}}', // ej: +54 9 11 1234-5678
+  whatsappMsg:      encodeURIComponent('Hola, quiero consultar sobre turnos disponibles.'),
+  phone:            '{{CLINIC_PHONE}}',
+  phoneDisplay:     '{{CLINIC_PHONE_DISPLAY}}',
+  email:            '{{CLINIC_EMAIL}}',
+  instagram:        '{{CLINIC_INSTAGRAM_HANDLE}}',
+  address:          '{{CLINIC_ADDRESS}}',
+  hoursWeekday:     '{{HOURS_WEEKDAY}}',
+  hoursSaturday:    '{{HOURS_SATURDAY}}',
+  googleReviewsUrl: '{{GOOGLE_REVIEWS_URL}}',
+  clientId:         '{{CLIENT_ID}}',
+  supabaseUrl:      '{{SUPABASE_URL}}',
+  supabaseKey:      '{{SUPABASE_ANON_KEY}}',
+  n8nWebhookUrl:    '{{N8N_WEBHOOK_URL}}',
+  testimonials: [
+    {
+      text:    '{{TESTIMONIAL_1_TEXT}}',
+      name:    '{{TESTIMONIAL_1_NAME}}',
+      initial: '{{TESTIMONIAL_1_INITIAL}}',
+      service: '{{TESTIMONIAL_1_SERVICE}}'
+    },
+    {
+      text:    '{{TESTIMONIAL_2_TEXT}}',
+      name:    '{{TESTIMONIAL_2_NAME}}',
+      initial: '{{TESTIMONIAL_2_INITIAL}}',
+      service: '{{TESTIMONIAL_2_SERVICE}}'
+    },
+    {
+      text:    '{{TESTIMONIAL_3_TEXT}}',
+      name:    '{{TESTIMONIAL_3_NAME}}',
+      initial: '{{TESTIMONIAL_3_INITIAL}}',
+      service: '{{TESTIMONIAL_3_SERVICE}}'
+    }
+  ]
+};
+
+/* ================================================================
+   HELPERS DE SUPABASE
+================================================================ */
+async function sbFetch(path, options = {}) {
+  const url = `${CONFIG.supabaseUrl}/rest/v1${path}`;
+  const headers = {
+    'apikey': CONFIG.supabaseKey,
+    'Authorization': `Bearer ${CONFIG.supabaseKey}`,
+    'Content-Type': 'application/json',
+    'Prefer': options.prefer || '',
+    ...options.headers
+  };
+  const res = await fetch(url, { ...options, headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+/* ================================================================
+   INICIALIZACIÓN
+================================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  setYear();
+  initLinks();
+  initNav();
+  initMobileMenu();
+  loadServices();
+  renderTestimonials();
+  initBookingForm();
+  initChatbot();
+  initAnimations();
+});
+
+/* ── Año en footer ─────────────────────────────────────────────── */
+function setYear() {
+  const el = document.getElementById('footerYear');
+  if (el) el.textContent = new Date().getFullYear();
+}
+
+/* ── Links dinámicos ────────────────────────────────────────────── */
+function initLinks() {
+  const waUrl = `https://wa.me/${CONFIG.whatsapp}?text=${CONFIG.whatsappMsg}`;
+  ['heroWhatsApp', 'overlayWhatsApp', 'fabWA', 'contactWA'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.href = waUrl;
+  });
+  const phoneEl = document.getElementById('contactPhone');
+  if (phoneEl) phoneEl.href = `tel:${CONFIG.phone}`;
+  const waDispEl = document.getElementById('contactWADisplay');
+  if (waDispEl) waDispEl.textContent = CONFIG.whatsappDisplay;
+  const phoneDispEl = document.getElementById('contactPhoneDisplay');
+  if (phoneDispEl) phoneDispEl.textContent = CONFIG.phoneDisplay;
+  const googleBtn = document.getElementById('googleReviewsBtn');
+  if (googleBtn && CONFIG.googleReviewsUrl && !CONFIG.googleReviewsUrl.includes('{{')) {
+    googleBtn.href = CONFIG.googleReviewsUrl;
+  }
+  // Chat header
+  const chatName = document.getElementById('chatHeaderName');
+  if (chatName) chatName.textContent = CONFIG.clinicName;
+}
+
+/* ── Nav scroll ─────────────────────────────────────────────────── */
+function initNav() {
+  const nav = document.getElementById('nav');
+  function onScroll() {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
+
+/* ── Menú mobile ────────────────────────────────────────────────── */
+function initMobileMenu() {
+  const overlay = document.getElementById('navOverlay');
+  const hamburger = document.getElementById('navHamburger');
+  const closeBtn = document.getElementById('navOverlayClose');
+
+  function open() { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function close() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+  hamburger.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  // Cerrar al clickear un link
+  overlay.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+}
+
+/* ================================================================
+   SERVICIOS — Fetch desde Supabase
+================================================================ */
+async function loadServices() {
+  const grid = document.getElementById('servicesGrid');
+  const formSelect = document.getElementById('fservice');
+  try {
+    const data = await sbFetch(
+      `/client_services?client_id=eq.${CONFIG.clientId}&active=eq.true&select=id,name,description,duration_minutes,price,currency&order=name.asc`
+    );
+    if (!data || data.length === 0) {
+      grid.innerHTML = `
+        <div class="services-state">
+          <p class="services-state-title">Consultar servicios disponibles</p>
+          <p class="services-state-sub">Contact&aacute;nos para conocer nuestros tratamientos y precios actualizados.</p>
+        </div>`;
+      return;
+    }
+    // Renderizar cards
+    grid.innerHTML = data.map((s, i) => `
+      <div class="service-card fade-up${i > 0 ? ` d${Math.min(i,4)}` : ''}">
+        <p class="service-name">${escHtml(s.name)}</p>
+        <p class="service-desc">${escHtml(s.description || '')}</p>
+        <div class="service-meta">
+          <p class="service-price">
+            <span class="service-price-currency">${escHtml(s.currency || '$')}</span>${formatPrice(s.price)}
+          </p>
+          <p class="service-duration">${s.duration_minutes ? s.duration_minutes + ' min' : ''}</p>
+        </div>
+      </div>
+    `).join('');
+    // Llenar select del form
+    formSelect.innerHTML = '<option value="" disabled selected>Seleccion\u00e1 un tratamiento</option>';
+    data.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.name;
+      opt.dataset.id = s.id;
+      opt.textContent = s.name;
+      formSelect.appendChild(opt);
+    });
+    // Reiniciar animaciones para las nuevas cards
+    observeAnimations();
+  } catch (err) {
+    console.warn('[loadServices]', err.message);
+    grid.innerHTML = `
+      <div class="services-state">
+        <p class="services-state-title">No se pudieron cargar los servicios</p>
+        <p class="services-state-sub">Reintent&aacute; en unos momentos o contact&aacute;nos directamente.</p>
+      </div>`;
+  }
+}
+
+function formatPrice(p) {
+  if (!p && p !== 0) return 'Consultar';
+  return Number(p).toLocaleString('es-AR');
+}
+
+/* ================================================================
+   HORARIOS DISPONIBLES — Fetch dinámico por fecha
+================================================================ */
+async function loadTimes(dateStr) {
+  const timeSel = document.getElementById('ftime');
+  timeSel.disabled = true;
+  timeSel.innerHTML = '<option value="" disabled selected>Cargando&hellip;</option>';
+
+  try {
+    const date = new Date(dateStr + 'T12:00:00');
+    const dayOfWeek = date.getDay(); // 0=Dom, 1=Lun...
+
+    // Traer horario de la clínica para ese día de la semana
+    const schedule = await sbFetch(
+      `/client_schedule?client_id=eq.${CONFIG.clientId}&day_of_week=eq.${dayOfWeek}&active=eq.true&select=open_time,close_time,slot_duration_minutes`
+    );
+
+    if (!schedule || schedule.length === 0) {
+      timeSel.innerHTML = '<option value="" disabled selected>Sin atenci\u00f3n este d\u00eda</option>';
+      return;
+    }
+
+    const { open_time, close_time, slot_duration_minutes } = schedule[0];
+    const slotMins = slot_duration_minutes || 60;
+
+    // Traer turnos ya ocupados para esa fecha
+    const taken = await sbFetch(
+      `/appointments?client_id=eq.${CONFIG.clientId}&date=eq.${dateStr}&status=neq.cancelled&select=time`
+    );
+    const takenTimes = new Set((taken || []).map(a => a.time));
+
+    // Generar slots
+    const slots = generateSlots(open_time, close_time, slotMins, takenTimes);
+
+    if (slots.length === 0) {
+      timeSel.innerHTML = '<option value="" disabled selected>Sin turnos disponibles</option>';
+      return;
+    }
+
+    timeSel.innerHTML = '<option value="" disabled selected>Elig\u00ed un horario</option>';
+    slots.forEach(slot => {
+      const opt = document.createElement('option');
+      opt.value = slot;
+      opt.textContent = slot;
+      timeSel.appendChild(opt);
+    });
+    timeSel.disabled = false;
+
+  } catch (err) {
+    console.warn('[loadTimes]', err.message);
+    timeSel.innerHTML = '<option value="" disabled selected>Error al cargar horarios</option>';
+  }
+}
+
+function generateSlots(openTime, closeTime, durationMins, takenTimes) {
+  const slots = [];
+  const toMinutes = t => {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  };
+  const toTimeStr = mins => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+  };
+  let cur = toMinutes(openTime);
+  const end = toMinutes(closeTime);
+  while (cur + durationMins <= end) {
+    const t = toTimeStr(cur);
+    if (!takenTimes.has(t)) slots.push(t);
+    cur += durationMins;
+  }
+  return slots;
+}
+
+/* ================================================================
+   FORMULARIO DE RESERVA
+================================================================ */
+function initBookingForm() {
+  // Min date = today
+  const dateInput = document.getElementById('fdate');
+  const today = new Date().toISOString().split('T')[0];
+  dateInput.min = today;
+
+  // Cargar horarios al elegir fecha
+  dateInput.addEventListener('change', e => {
+    if (e.target.value) loadTimes(e.target.value);
+  });
+
+  // Submit
+  document.getElementById('bookingForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    await submitBooking();
+  });
+}
+
+async function submitBooking() {
+  const btn = document.getElementById('bookingSubmit');
+  const errEl = document.getElementById('formError');
+  errEl.classList.remove('show');
+
+  const name    = document.getElementById('fname').value.trim();
+  const phone   = document.getElementById('fphone').value.trim();
+  const email   = document.getElementById('femail').value.trim();
+  const service = document.getElementById('fservice').value;
+  const date    = document.getElementById('fdate').value;
+  const time    = document.getElementById('ftime').value;
+  const notes   = document.getElementById('fnotes').value.trim();
+
+  if (!name || !phone || !service || !date || !time) {
+    errEl.textContent = 'Por favor complet\u00e1 todos los campos obligatorios.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  btn.textContent = 'Enviando\u2026';
+  btn.disabled = true;
+
+  try {
+    // 1. Crear o actualizar contacto
+    let contactId = null;
+    try {
+      const contacts = await sbFetch(
+        `/client_contacts?client_id=eq.${CONFIG.clientId}&phone=eq.${encodeURIComponent(phone)}&select=id`,
+        { prefer: '' }
+      );
+      if (contacts && contacts.length > 0) {
+        contactId = contacts[0].id;
+      } else {
+        const newContact = await sbFetch('/client_contacts', {
+          method: 'POST',
+          body: JSON.stringify({
+            client_id: CONFIG.clientId,
+            name, phone, email: email || null,
+            source: 'web_booking', status: 'active'
+          }),
+          prefer: 'return=representation',
+          headers: { 'Prefer': 'return=representation' }
+        });
+        if (newContact && newContact[0]) contactId = newContact[0].id;
+      }
+    } catch(contactErr) {
+      console.warn('[submitBooking] contact:', contactErr.message);
+    }
+
+    // 2. Crear el turno
+    await sbFetch('/appointments', {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: CONFIG.clientId,
+        contact_id: contactId || null,
+        service, date, time: time,
+        status: 'pending',
+        notes: notes || null
+      }),
+      headers: { 'Prefer': 'return=representation' }
+    });
+
+    // 3. Notificar a n8n
+    if (CONFIG.n8nWebhookUrl && !CONFIG.n8nWebhookUrl.includes('{{')) {
+      fetch(CONFIG.n8nWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: 'new_appointment',
+          clinic_id: CONFIG.clientId,
+          data: { name, phone, email, service, date, time, notes }
+        })
+      }).catch(() => {}); // fire and forget
+    }
+
+    // 4. Mostrar overlay de éxito
+    const successText = document.getElementById('successText');
+    successText.textContent = `Listo, ${name.split(' ')[0]}. Te enviamos la confirmaci\u00f3n por WhatsApp en los pr\u00f3ximos minutos.`;
+    document.getElementById('successOverlay').classList.add('show');
+    document.getElementById('bookingForm').reset();
+    document.getElementById('ftime').disabled = true;
+    document.getElementById('ftime').innerHTML = '<option value="" disabled selected>Prim\u00e9ro elig\u00ed fecha</option>';
+
+  } catch (err) {
+    console.error('[submitBooking]', err);
+    errEl.textContent = 'Ocurri\u00f3 un error al enviar. Intent\u00e1 nuevamente o contact\u00e1nos por WhatsApp.';
+    errEl.classList.add('show');
+  } finally {
+    btn.textContent = 'Confirmar reserva';
+    btn.disabled = false;
+  }
+}
+
+/* ================================================================
+   TESTIMONIALES
+================================================================ */
+function renderTestimonials() {
+  const grid = document.getElementById('testimonialsGrid');
+  const stars = '<span>&#9733;</span>'.repeat(5);
+  grid.innerHTML = CONFIG.testimonials.map((t, i) => `
+    <div class="testimonial-card fade-up${i > 0 ? ` d${i}` : ''}">
+      <div class="testimonial-stars">${stars}</div>
+      <p class="testimonial-quote">&ldquo;${escHtml(t.text)}&rdquo;</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">${escHtml(t.initial)}</div>
+        <div>
+          <p class="testimonial-name">${escHtml(t.name)}</p>
+          <p class="testimonial-service">${escHtml(t.service)}</p>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ================================================================
+   CHATBOT
+================================================================ */
+const CHAT_RESPONSES = {
+  precios: () =>
+    `Nuestros precios var\u00edan seg\u00fan el tratamiento. Cargamos todos los servicios y costos en la secci\u00f3n <em>Servicios</em> de la p\u00e1gina. Para una cotizaci\u00f3n personalizada, pod\u00e9s reservar una consulta gratuita o contactarnos por WhatsApp.`,
+  servicios: () =>
+    `Ofrecemos una amplia variedad de tratamientos est\u00e9ticos. Scroll hacia arriba para ver el men\u00fa completo de servicios con precios y duraciones. \u00bfHay alguno en particular que te interese?`,
+  horarios: () =>
+    `Nuestros horarios son:\n\u2022 Lunes a Viernes: ${CONFIG.hoursWeekday}\n\u2022 S\u00e1bados: ${CONFIG.hoursSaturday}\n\u2022 Domingos: cerrado.\nPod\u00e9s reservar en l\u00ednea en cualquier momento.`,
+  turno: () =>
+    `\u00a1Perfecto! Pod\u00e9s reservar tu turno directamente desde esta p\u00e1gina. Scroll hacia abajo hasta la secci\u00f3n \u201cReserv\u00e1 tu turno\u201d o <a href="#reservar" onclick="closeChatWindow()">hac\u00e9 click ac\u00e1</a>.`,
+  ubicacion: () =>
+    `Nos encontramos en <strong>${CONFIG.address}</strong>. Si necesit\u00e1s c\u00f3mo llegar, escrib\u00ednos por WhatsApp y te ayudamos.`,
+  whatsapp: () =>
+    `Pod\u00e9s escribirnos a <a href="https://wa.me/${CONFIG.whatsapp}" target="_blank">WhatsApp</a> cuando quieras. Respondemos en horario de atenci\u00f3n.`,
+  default: () =>
+    `Gracias por tu consulta. Para una respuesta m\u00e1s r\u00e1pida, pod\u00e9s escribirnos por <a href="https://wa.me/${CONFIG.whatsapp}" target="_blank">WhatsApp</a> o reservar un turno directamente. \u00bfPuedo ayudarte con algo m\u00e1s?`
+};
+
+const CHAT_KEYWORDS = {
+  precios:   ['precio','costo','cuánto','cuanto','vale','tarifa','cobr'],
+  servicios: ['servicio','tratamiento','ofrecen','tienen','hacen','terapia'],
+  horarios:  ['horario','hora','cuando','cuándo','atienden','abren','cierran','abierto'],
+  turno:     ['turno','reserva','reservar','cita','sacar','pedir','agenda'],
+  ubicacion: ['ubicación','ubicacion','donde','dirección','direccion','llegar','mapa'],
+  whatsapp:  ['whatsapp','wp','wsp','teléfono','telefono','llamar','contacto']
+};
+
+function detectIntent(text) {
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  for (const [intent, words] of Object.entries(CHAT_KEYWORDS)) {
+    if (words.some(w => lower.includes(w))) return intent;
+  }
+  return 'default';
+}
+
+function initChatbot() {
+  const toggle   = document.getElementById('chatToggle');
+  const window_  = document.getElementById('chatWindow');
+  const closeBtn = document.getElementById('chatClose');
+  const input    = document.getElementById('chatInput');
+  const sendBtn  = document.getElementById('chatSend');
+
+  let opened = false;
+
+  toggle.addEventListener('click', () => {
+    opened = !opened;
+    window_.classList.toggle('open', opened);
+    if (opened && document.getElementById('chatMessages').children.length === 0) {
+      setTimeout(() => addBotMsg(`\u00a1Hola! Soy el asistente de <strong>${escHtml(CONFIG.clinicName)}</strong>. \u00bfEn qu\u00e9 puedo ayudarte hoy?`), 300);
+    }
+  });
+  closeBtn.addEventListener('click', () => {
+    opened = false;
+    window_.classList.remove('open');
+  });
+
+  // Quick replies
+  document.getElementById('chatQuick').addEventListener('click', e => {
+    const btn = e.target.closest('[data-intent]');
+    if (!btn) return;
+    const intent = btn.dataset.intent;
+    const label = btn.textContent;
+    addUserMsg(label);
+    setTimeout(() => addBotMsg(CHAT_RESPONSES[intent]?.() || CHAT_RESPONSES.default()), 600);
+  });
+
+  // Text input
+  function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addUserMsg(text);
+    const intent = detectIntent(text);
+    setTimeout(() => addBotMsg(CHAT_RESPONSES[intent]()), 700);
+  }
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+}
+
+function addBotMsg(html) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg chat-msg-bot';
+  div.innerHTML = html;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMsg(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg chat-msg-user';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function closeChatWindow() {
+  document.getElementById('chatWindow').classList.remove('open');
+}
+
+/* ================================================================
+   SCROLL ANIMATIONS
+================================================================ */
+function initAnimations() {
+  observeAnimations();
+}
+
+function observeAnimations() {
+  const els = document.querySelectorAll('.fade-up:not(.observed)');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  els.forEach(el => {
+    el.classList.add('observed');
+    observer.observe(el);
+  });
+}
+
+/* ================================================================
+   UTILS
+================================================================ */
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
