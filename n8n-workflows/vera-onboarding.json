@@ -1,0 +1,192 @@
+{
+  "name": "Vera — Onboarding",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vera-onboarding",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "vera-onboarding"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://smownspggkjerpqpbzdq.supabase.co/rest/v1/clients",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3duc3BnZ2tqZXJwcXBiemRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTgzMzMsImV4cCI6MjA4OTYzNDMzM30.bx8xB00JF0ytV7vGffk45qzr4obZm5NtJVAT6J_xUfU"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3duc3BnZ2tqZXJwcXBiemRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTgzMzMsImV4cCI6MjA4OTYzNDMzM30.bx8xB00JF0ytV7vGffk45qzr4obZm5NtJVAT6J_xUfU"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": []
+        },
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"clinic_name\": \"{{ $json.body.data.clinic_name }}\",\n  \"owner_name\": \"{{ $json.body.data.contact_name }}\",\n  \"email\": \"{{ $json.body.data.email }}\",\n  \"phone\": \"{{ $json.body.data.phone }}\",\n  \"instagram\": \"{{ $json.body.data.instagram }}\",\n  \"address\": \"{{ $json.body.data.address }}\",\n  \"status\": \"onboarding\",\n  \"onboarding_step\": 1,\n  \"onboarding_checklist\": [\n    {\"step\": 1, \"name\": \"Registro creado\", \"done\": true},\n    {\"step\": 2, \"name\": \"Web generada\", \"done\": false},\n    {\"step\": 3, \"name\": \"Workflows n8n configurados\", \"done\": false},\n    {\"step\": 4, \"name\": \"Chatbot WhatsApp conectado\", \"done\": false},\n    {\"step\": 5, \"name\": \"Chatbot Instagram conectado\", \"done\": false},\n    {\"step\": 6, \"name\": \"ManyChat configurado\", \"done\": false},\n    {\"step\": 7, \"name\": \"Testing completo\", \"done\": false},\n    {\"step\": 8, \"name\": \"Cliente activo\", \"done\": false}\n  ]\n}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Crear Cliente en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://smownspggkjerpqpbzdq.supabase.co/rest/v1/activity_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3duc3BnZ2tqZXJwcXBiemRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTgzMzMsImV4cCI6MjA4OTYzNDMzM30.bx8xB00JF0ytV7vGffk45qzr4obZm5NtJVAT6J_xUfU"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3duc3BnZ2tqZXJwcXBiemRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTgzMzMsImV4cCI6MjA4OTYzNDMzM30.bx8xB00JF0ytV7vGffk45qzr4obZm5NtJVAT6J_xUfU"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"vera\",\n  \"agent_name\": \"Vera\",\n  \"agent_emoji\": \"⚡\",\n  \"type\": \"task\",\n  \"description\": \"Onboarding iniciado: {{ $('Webhook').item.json.body.data.clinic_name }}\",\n  \"details\": \"Cliente creado en sistema. Checklist de 8 pasos iniciado.\"\n}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Log Actividad",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://smownspggkjerpqpbzdq.supabase.co/rest/v1/leads?id=eq.{{ $('Webhook').item.json.body.data.lead_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3duc3BnZ2tqZXJwcXBiemRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTgzMzMsImV4cCI6MjA4OTYzNDMzM30.bx8xB00JF0ytV7vGffk45qzr4obZm5NtJVAT6J_xUfU"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtb3duc3BnZ2tqZXJwcXBiemRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNTgzMzMsImV4cCI6MjA4OTYzNDMzM30.bx8xB00JF0ytV7vGffk45qzr4obZm5NtJVAT6J_xUfU"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"stage\": \"closed\",\n  \"assigned_agent\": \"vera\"\n}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Actualizar Lead Stage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ok\": true,\n  \"message\": \"Onboarding iniciado para {{ $('Webhook').item.json.body.data.clinic_name }}\"\n}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1200, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Crear Cliente en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Cliente en Supabase": {
+      "main": [
+        [
+          {
+            "node": "Log Actividad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Actividad": {
+      "main": [
+        [
+          {
+            "node": "Actualizar Lead Stage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar Lead Stage": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-25T00:00:00.000Z",
+  "versionId": "vera-onboarding-v1"
+}
