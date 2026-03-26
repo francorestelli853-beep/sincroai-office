@@ -9,6 +9,7 @@ import {
   Terminal,
   Activity,
   Target,
+  Building2,
   Zap,
   Menu,
   X,
@@ -19,6 +20,7 @@ const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/agents', label: 'Agentes', icon: Bot },
   { href: '/leads', label: 'Leads', icon: Target },
+  { href: '/clients', label: 'Clientes', icon: Building2 },
   { href: '/control', label: 'Control', icon: Terminal },
   { href: '/activity', label: 'Actividad', icon: Activity },
 ]

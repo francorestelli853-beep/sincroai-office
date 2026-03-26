@@ -1,4 +1,4 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js'
+import { SupabaseClient, createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { Agent, Task, TaskStatus, Message, ActivityLog } from './types'
 
 // ─── CLIENT (lazy singleton) ────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ function getSupabase(): SupabaseClient {
     // IMPORTANTE: fetch con cache:'no-store' evita que Next.js 14 cachee las
     // respuestas del SDK de Supabase. Sin esto, cambios en la DB no se reflejan
     // en la app hasta que el servidor se reinicia (cache hit permanente).
-    _client = createClient(url, key, {
+    _client = createSupabaseClient(url, key, {
       global: {
         fetch: (input: RequestInfo | URL, init?: RequestInit) =>
           fetch(input, { ...init, cache: 'no-store' }),
@@ -365,6 +365,153 @@ export async function getLeadsByAgent(agentId: string): Promise<Lead[]> {
   } catch (err) {
     console.warn('[Supabase:getLeadsByAgent] no disponible:', (err as Error).message)
     return []
+  }
+}
+
+// ─── CLIENTS ────────────────────────────────────────────────────────────────────
+
+export interface OnboardingItem {
+  step: number
+  name: string
+  done: boolean
+}
+
+export interface Client {
+  id: string
+  clinicName: string
+  ownerName: string | null
+  email: string | null
+  phone: string | null
+  instagram: string | null
+  address: string | null
+  status: 'onboarding' | 'active' | 'paused' | 'cancelled'
+  onboardingStep: number
+  onboardingChecklist: OnboardingItem[]
+  notes: string | null
+  createdAt: Date
+}
+
+function mapClient(row: DbRow): Client {
+  let checklist: OnboardingItem[] = []
+  try {
+    const raw = row.onboarding_checklist
+    if (Array.isArray(raw)) checklist = raw as OnboardingItem[]
+    else if (typeof raw === 'string') checklist = JSON.parse(raw) as OnboardingItem[]
+  } catch { checklist = [] }
+
+  return {
+    id:                  row.id as string,
+    clinicName:          (row.clinic_name ?? '') as string,
+    ownerName:           (row.owner_name ?? null) as string | null,
+    email:               (row.email ?? null) as string | null,
+    phone:               (row.phone ?? null) as string | null,
+    instagram:           (row.instagram ?? null) as string | null,
+    address:             (row.address ?? null) as string | null,
+    status:              (row.status ?? 'onboarding') as Client['status'],
+    onboardingStep:      row.onboarding_step != null ? Number(row.onboarding_step) : 1,
+    onboardingChecklist: checklist,
+    notes:               (row.notes ?? null) as string | null,
+    createdAt:           new Date((row.created_at ?? new Date().toISOString()) as string),
+  }
+}
+
+export async function getClients(): Promise<Client[]> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('clients')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) { console.error('[Supabase:getClients] error:', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapClient, 'getClients')
+  } catch (err) {
+    console.warn('[Supabase:getClients] no disponible:', (err as Error).message)
+    return []
+  }
+}
+
+export async function getClient(id: string): Promise<Client | null> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('clients')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) { console.error('[Supabase:getClient] error:', error.message); return null }
+    if (!data) return null
+    return mapClient(data as DbRow)
+  } catch (err) {
+    console.warn('[Supabase:getClient] no disponible:', (err as Error).message)
+    return null
+  }
+}
+
+export async function createClient(clientData: Partial<Client> & { clinicName: string }): Promise<Client | null> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('clients')
+      .insert({
+        clinic_name:          clientData.clinicName,
+        owner_name:           clientData.ownerName           ?? null,
+        email:                clientData.email               ?? null,
+        phone:                clientData.phone               ?? null,
+        instagram:            clientData.instagram           ?? null,
+        address:              clientData.address             ?? null,
+        status:               clientData.status              ?? 'onboarding',
+        onboarding_step:      clientData.onboardingStep      ?? 1,
+        onboarding_checklist: clientData.onboardingChecklist ?? [],
+        notes:                clientData.notes               ?? null,
+      })
+      .select()
+      .single()
+
+    if (error) { console.error('[Supabase:createClient] error:', error.message); return null }
+    if (!data) return null
+    return mapClient(data as DbRow)
+  } catch (err) {
+    console.warn('[Supabase:createClient] no disponible:', (err as Error).message)
+    return null
+  }
+}
+
+export async function updateClient(id: string, updates: Partial<{
+  status: Client['status']
+  onboardingStep: number
+  onboardingChecklist: OnboardingItem[]
+  notes: string
+  ownerName: string
+  email: string
+  phone: string
+  instagram: string
+  address: string
+}>): Promise<Client | null> {
+  try {
+    const dbUpdates: Record<string, unknown> = {}
+    if (updates.status              !== undefined) dbUpdates.status               = updates.status
+    if (updates.onboardingStep      !== undefined) dbUpdates.onboarding_step      = updates.onboardingStep
+    if (updates.onboardingChecklist !== undefined) dbUpdates.onboarding_checklist = updates.onboardingChecklist
+    if (updates.notes               !== undefined) dbUpdates.notes                = updates.notes
+    if (updates.ownerName           !== undefined) dbUpdates.owner_name           = updates.ownerName
+    if (updates.email               !== undefined) dbUpdates.email                = updates.email
+    if (updates.phone               !== undefined) dbUpdates.phone                = updates.phone
+    if (updates.instagram           !== undefined) dbUpdates.instagram            = updates.instagram
+    if (updates.address             !== undefined) dbUpdates.address              = updates.address
+
+    const { data, error } = await getSupabase()
+      .from('clients')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) { console.error('[Supabase:updateClient] error:', error.message); return null }
+    if (!data) return null
+    return mapClient(data as DbRow)
+  } catch (err) {
+    console.warn('[Supabase:updateClient] no disponible:', (err as Error).message)
+    return null
   }
 }
 
