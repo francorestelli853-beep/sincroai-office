@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Trash2, Save, Download, Loader2, ArrowLeft, Check } from 'lucide-react'
+import { useState, useCallback } from 'react'
+import { Plus, Trash2, Save, Download, Loader2, ArrowLeft, Check, Globe } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { Client, ClientService, ClientSchedule, WebConfig } from '@/lib/supabase'
@@ -609,6 +609,78 @@ function GenerateWebSection({ clientId, clinicName }: { clientId: string; clinic
   )
 }
 
+// ─── Botón prominente: Generar Web ───────────────────────────────────────────
+
+function GenerateWebButton({ clientId, clinicName }: { clientId: string; clinicName: string }) {
+  const [loading, setLoading]   = useState(false)
+  const [done, setDone]         = useState(false)
+  const [err, setErr]           = useState<string | null>(null)
+
+  const handleGenerate = useCallback(async () => {
+    setLoading(true)
+    setErr(null)
+    setDone(false)
+    try {
+      const res = await fetch(`/api/clients/${clientId}/generate-web`, { method: 'POST' })
+      if (!res.ok) {
+        const body = await res.json() as { error?: string }
+        throw new Error(body.error ?? 'Error al generar')
+      }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const disposition = res.headers.get('Content-Disposition') ?? ''
+      const match = disposition.match(/filename="([^"]+)"/)
+      const fileName = match?.[1] ?? `web-${clinicName.toLowerCase().replace(/\s+/g, '-')}.html`
+
+      // descarga automática
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 10_000)
+      setDone(true)
+      setTimeout(() => setDone(false), 4000)
+    } catch (e) {
+      setErr((e as Error).message)
+      setTimeout(() => setErr(null), 5000)
+    } finally {
+      setLoading(false)
+    }
+  }, [clientId, clinicName])
+
+  if (err) {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+        ! {err}
+      </span>
+    )
+  }
+
+  if (done) {
+    return (
+      <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400">
+        <Check className="h-4 w-4" /> Descargando…
+      </span>
+    )
+  }
+
+  return (
+    <button
+      onClick={handleGenerate}
+      disabled={loading}
+      className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 hover:bg-violet-500 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+    >
+      {loading ? (
+        <><Loader2 className="h-4 w-4 animate-spin" />Generando…</>
+      ) : (
+        <><Globe className="h-4 w-4" />Generar Web del Cliente</>
+      )}
+    </button>
+  )
+}
+
 // ─── Panel principal ──────────────────────────────────────────────────────────
 
 export function ClientDetailPanel({
@@ -622,14 +694,23 @@ export function ClientDetailPanel({
 }) {
   return (
     <div className="space-y-6">
-      {/* Back + título */}
-      <div className="flex items-center gap-4">
-        <Link href="/clients" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors">
-          <ArrowLeft className="h-4 w-4" />
-          Clientes
-        </Link>
-        <span className="text-gray-700">/</span>
-        <p className="text-sm text-gray-300 font-medium">{client.clinicName}</p>
+      {/* Header: breadcrumb + acción principal */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* breadcrumb */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/clients"
+            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Clientes
+          </Link>
+          <span className="text-gray-700">/</span>
+          <p className="text-sm font-medium text-gray-200">{client.clinicName}</p>
+        </div>
+
+        {/* CTA prominente */}
+        <GenerateWebButton clientId={client.id} clinicName={client.clinicName} />
       </div>
 
       <ServicesSection  clientId={client.id} initial={initialServices} />
