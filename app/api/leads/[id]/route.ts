@@ -61,7 +61,7 @@ export async function PATCH(
     // Webhook a Vera cuando el lead pasa a "closed"
     if (body.stage === 'closed' && lead) {
       try {
-        const webhookRes = await fetch('http://172.18.0.3:5678/webhook/vera-onboarding', {
+        const webhookRes = await fetch('const webhookRes = await fetch('https://n8n.srv1306548.hstgr.cloud/webhook/vera-onboarding', {', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
