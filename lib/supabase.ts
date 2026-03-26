@@ -376,6 +376,24 @@ export interface OnboardingItem {
   done: boolean
 }
 
+export interface WebConfigTestimonial {
+  text: string
+  name: string
+  initial: string
+  service: string
+}
+
+export interface WebConfig {
+  tagline: string
+  badge: string
+  primaryColor: string
+  accentColor: string
+  googleReviewsUrl: string
+  hoursWeekday: string
+  hoursSaturday: string
+  testimonials: [WebConfigTestimonial, WebConfigTestimonial, WebConfigTestimonial]
+}
+
 export interface Client {
   id: string
   clinicName: string
@@ -387,6 +405,7 @@ export interface Client {
   status: 'onboarding' | 'active' | 'paused' | 'cancelled'
   onboardingStep: number
   onboardingChecklist: OnboardingItem[]
+  webConfig: WebConfig | null
   notes: string | null
   createdAt: Date
 }
@@ -399,6 +418,13 @@ function mapClient(row: DbRow): Client {
     else if (typeof raw === 'string') checklist = JSON.parse(raw) as OnboardingItem[]
   } catch { checklist = [] }
 
+  let webConfig: WebConfig | null = null
+  try {
+    const raw = row.web_config
+    if (raw && typeof raw === 'object') webConfig = raw as WebConfig
+    else if (typeof raw === 'string') webConfig = JSON.parse(raw) as WebConfig
+  } catch { webConfig = null }
+
   return {
     id:                  row.id as string,
     clinicName:          (row.clinic_name ?? '') as string,
@@ -410,8 +436,89 @@ function mapClient(row: DbRow): Client {
     status:              (row.status ?? 'onboarding') as Client['status'],
     onboardingStep:      row.onboarding_step != null ? Number(row.onboarding_step) : 1,
     onboardingChecklist: checklist,
+    webConfig,
     notes:               (row.notes ?? null) as string | null,
     createdAt:           new Date((row.created_at ?? new Date().toISOString()) as string),
+  }
+}
+
+// ─── CLIENT SERVICES ──────────────────────────────────────────────────────────
+
+export interface ClientService {
+  id: string
+  clientId: string
+  name: string
+  description: string | null
+  durationMinutes: number | null
+  price: number | null
+  currency: string
+  active: boolean
+}
+
+function mapClientService(row: DbRow): ClientService {
+  return {
+    id:              row.id as string,
+    clientId:        row.client_id as string,
+    name:            (row.name ?? '') as string,
+    description:     (row.description ?? null) as string | null,
+    durationMinutes: row.duration_minutes != null ? Number(row.duration_minutes) : null,
+    price:           row.price != null ? Number(row.price) : null,
+    currency:        (row.currency ?? 'ARS') as string,
+    active:          (row.active ?? true) as boolean,
+  }
+}
+
+export async function getClientServices(clientId: string): Promise<ClientService[]> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('client_services')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('name', { ascending: true })
+    if (error) { console.error('[Supabase:getClientServices]', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapClientService, 'getClientServices')
+  } catch (err) {
+    console.warn('[Supabase:getClientServices]', (err as Error).message); return []
+  }
+}
+
+// ─── CLIENT SCHEDULE ──────────────────────────────────────────────────────────
+
+export interface ClientSchedule {
+  id: string | null
+  clientId: string
+  dayOfWeek: number   // 0=Dom 1=Lun 2=Mar 3=Mié 4=Jue 5=Vie 6=Sáb
+  openTime: string    // "09:00"
+  closeTime: string   // "18:00"
+  slotDurationMinutes: number
+  active: boolean
+}
+
+function mapClientSchedule(row: DbRow): ClientSchedule {
+  return {
+    id:                  (row.id ?? null) as string | null,
+    clientId:            row.client_id as string,
+    dayOfWeek:           Number(row.day_of_week),
+    openTime:            (row.open_time ?? '09:00') as string,
+    closeTime:           (row.close_time ?? '18:00') as string,
+    slotDurationMinutes: row.slot_duration_minutes != null ? Number(row.slot_duration_minutes) : 60,
+    active:              (row.active ?? false) as boolean,
+  }
+}
+
+export async function getClientSchedule(clientId: string): Promise<ClientSchedule[]> {
+  try {
+    const { data, error } = await getSupabase()
+      .from('client_schedule')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('day_of_week', { ascending: true })
+    if (error) { console.error('[Supabase:getClientSchedule]', error.message); return [] }
+    if (!data || data.length === 0) return []
+    return safeMap(data as DbRow[], mapClientSchedule, 'getClientSchedule')
+  } catch (err) {
+    console.warn('[Supabase:getClientSchedule]', (err as Error).message); return []
   }
 }
 
