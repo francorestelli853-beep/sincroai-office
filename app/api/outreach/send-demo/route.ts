@@ -179,6 +179,7 @@ SincroAI — sincroai.net
 // ── Route handler ──────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  // ── 1. Parsear body ────────────────────────────────────────────────────────
   let body: {
     lead_id?: string
     clinic_name?: string
@@ -189,11 +190,14 @@ export async function POST(req: NextRequest) {
 
   try {
     body = await req.json()
-  } catch {
+  } catch (parseErr) {
+    console.error('[send-demo] Error parseando body:', parseErr)
     return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
   }
 
   const { lead_id, clinic_name, contact_name, email, demo_url } = body
+
+  console.log('[send-demo] body recibido:', { lead_id, clinic_name, contact_name, email, demo_url: demo_url?.slice(0, 60) })
 
   if (!email || !clinic_name || !demo_url) {
     return NextResponse.json(
@@ -202,57 +206,93 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const resend = new Resend(process.env.RESEND_API_KEY)
-
-  const { subject, html, text } = buildDemoEmail({
-    contactName: contact_name ?? clinic_name,
-    clinicName:  clinic_name,
-    demoUrl:     demo_url,
-  })
-
-  // 1. Enviar email via Resend
-  const { data: emailData, error: resendErr } = await resend.emails.send({
-    from:    'Franco de SincroAI <franco@sincroai.net>',
-    to:      email,
-    subject,
-    html,
-    text,
-  })
-
-  if (resendErr) {
-    console.error('[send-demo] Resend error:', resendErr)
-    return NextResponse.json({ error: resendErr.message }, { status: 400 })
+  // ── 2. Verificar API key ───────────────────────────────────────────────────
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.error('[send-demo] RESEND_API_KEY no configurada')
+    return NextResponse.json({ error: 'Resend no configurado (falta RESEND_API_KEY)' }, { status: 500 })
   }
 
-  // 2. Actualizar stage del lead a "demo_sent" + last_contact
-  if (lead_id) {
-    await supabaseAdmin
-      .from('leads')
-      .update({ stage: 'demo_sent', last_contact: new Date().toISOString() })
-      .eq('id', lead_id)
+  // ── 3. Construir email ─────────────────────────────────────────────────────
+  let subject: string, html: string, text: string
+  try {
+    ;({ subject, html, text } = buildDemoEmail({
+      contactName: contact_name ?? clinic_name,
+      clinicName:  clinic_name,
+      demoUrl:     demo_url,
+    }))
+  } catch (buildErr) {
+    console.error('[send-demo] Error construyendo email:', buildErr)
+    return NextResponse.json({ error: 'Error interno al construir el email' }, { status: 500 })
   }
 
-  // 3. Registrar en activity_log
-  await supabaseAdmin.from('activity_log').insert({
-    agent_id:   'marco',
-    agent_name: 'Marco',
-    action:     `Demo enviada: ${clinic_name}`,
-    details:    `Email con demo enviado a ${contact_name ?? email} (${email}) — ${demo_url}`,
-    category:   'task',
-    timestamp:  new Date().toISOString(),
-  })
+  // ── 4. Enviar via Resend ──────────────────────────────────────────────────
+  try {
+    const resend = new Resend(apiKey)
 
-  // 4. Registrar en emails_sent (best-effort)
-  supabaseAdmin.from('emails_sent').insert({
-    lead_id:   lead_id ?? null,
-    to_email:  email,
-    to_name:   contact_name ?? null,
-    subject,
-    body:      text,
-    resend_id: emailData?.id ?? null,
-  }).then(({ error: e }) => {
-    if (e) console.warn('[send-demo] emails_sent insert error:', e.message)
-  })
+    console.log('[send-demo] Enviando a:', email, '| subject:', subject)
 
-  return NextResponse.json({ success: true, emailId: emailData?.id })
+    const { data: emailData, error: resendErr } = await resend.emails.send({
+      from:    'Franco de SincroAI <franco@sincroai.net>',
+      to:      email,
+      subject,
+      html,
+      text,
+    })
+
+    if (resendErr) {
+      console.error('[send-demo] Resend devolvió error:', JSON.stringify(resendErr))
+      return NextResponse.json(
+        { error: resendErr.message ?? 'Error de Resend' },
+        { status: 400 }
+      )
+    }
+
+    console.log('[send-demo] Email enviado OK. Resend ID:', emailData?.id)
+
+    // ── 5. Actualizar lead (fire-and-forget) ────────────────────────────────
+    if (lead_id) {
+      supabaseAdmin
+        .from('leads')
+        .update({ stage: 'demo_sent', last_contact: new Date().toISOString() })
+        .eq('id', lead_id)
+        .then(({ error: e }) => {
+          if (e) console.warn('[send-demo] Error actualizando lead stage:', e.message)
+          else console.log('[send-demo] Lead stage → demo_sent:', lead_id)
+        })
+    }
+
+    // ── 6. Activity log (fire-and-forget) ───────────────────────────────────
+    supabaseAdmin.from('activity_log').insert({
+      agent_id:   'marco',
+      agent_name: 'Marco',
+      action:     `Demo enviada: ${clinic_name}`,
+      details:    `Email enviado a ${contact_name ?? email} (${email}) — ${demo_url}`,
+      category:   'task',
+      timestamp:  new Date().toISOString(),
+    }).then(({ error: e }) => {
+      if (e) console.warn('[send-demo] Error en activity_log:', e.message)
+    })
+
+    // ── 7. emails_sent (fire-and-forget) ────────────────────────────────────
+    supabaseAdmin.from('emails_sent').insert({
+      lead_id:   lead_id ?? null,
+      to_email:  email,
+      to_name:   contact_name ?? null,
+      subject,
+      body:      text,
+      resend_id: emailData?.id ?? null,
+    }).then(({ error: e }) => {
+      if (e) console.warn('[send-demo] Error en emails_sent:', e.message)
+    })
+
+    return NextResponse.json({ success: true, emailId: emailData?.id ?? null })
+
+  } catch (err) {
+    console.error('[send-demo] Error inesperado:', err)
+    return NextResponse.json(
+      { error: (err as Error).message ?? 'Error interno del servidor' },
+      { status: 500 }
+    )
+  }
 }
