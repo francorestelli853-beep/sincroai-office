@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import {
   Phone, Mail, Instagram, MapPin, Star, Plus,
-  ChevronDown, ExternalLink, X, Search, Link2, Send, Check, Loader2,
+  ChevronDown, ExternalLink, X, Search, Link2, Send, Check, Loader2, Rocket,
 } from 'lucide-react'
 import { Lead } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
@@ -95,6 +95,7 @@ function LeadDetailDialog({
   const [savingDemo, setSavingDemo] = useState(false)
   const [sendingDemo, setSendingDemo] = useState(false)
   const [demoSent, setDemoSent] = useState(false)
+  const [deployingDemo, setDeployingDemo] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [demoMsg, setDemoMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
@@ -163,8 +164,9 @@ function LeadDetailDialog({
           demo_url:     demoUrl.trim(),
         }),
       })
-      const data = await res.json() as { success?: boolean; error?: string }
-      if (!res.ok) throw new Error(data.error ?? 'Error al enviar')
+      let data: { success?: boolean; error?: string } = {}
+      try { const t = await res.text(); if (t.trim()) data = JSON.parse(t) } catch { /* ignore */ }
+      if (!res.ok) throw new Error(data.error ?? `Error al enviar (${res.status})`)
       setDemoSent(true)
       setDemoMsg({ text: '✅ Demo enviada por email', type: 'ok' })
       onUpdated({ ...lead, stage: 'demo_sent', demoUrl: demoUrl.trim(), lastContact: new Date() })
@@ -172,6 +174,36 @@ function LeadDetailDialog({
       setDemoMsg({ text: (e as Error).message, type: 'err' })
     } finally {
       setSendingDemo(false)
+    }
+  }
+
+  const handleDeployDemo = async () => {
+    setDeployingDemo(true)
+    setDemoMsg(null)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}/deploy-demo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clinic_name:  lead.clinicName,
+          contact_name: lead.contactName ?? lead.clinicName,
+          phone:        lead.phone       ?? '',
+          email:        lead.email       ?? '',
+          instagram:    lead.instagram   ?? '',
+          address:      lead.address     ?? '',
+        }),
+      })
+      let data: { url?: string; error?: string } = {}
+      try { const t = await res.text(); if (t.trim()) data = JSON.parse(t) } catch { /* ignore */ }
+      if (!res.ok) throw new Error(data.error ?? `Error del servidor (${res.status})`)
+      const deployedUrl = data.url ?? ''
+      setDemoUrl(deployedUrl)
+      setDemoMsg({ text: `✅ Demo desplegada → ${deployedUrl}`, type: 'ok' })
+      onUpdated({ ...lead, demoUrl: deployedUrl })
+    } catch (e) {
+      setDemoMsg({ text: (e as Error).message, type: 'err' })
+    } finally {
+      setDeployingDemo(false)
     }
   }
 
@@ -263,6 +295,26 @@ function LeadDetailDialog({
             <p className="text-xs font-semibold uppercase tracking-wider text-violet-400 flex items-center gap-1.5">
               <Link2 className="h-3.5 w-3.5" /> Demo URL
             </p>
+
+            {/* Deploy automático */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 border-violet-500/40 text-violet-300 hover:bg-violet-500/10 hover:text-violet-200"
+              onClick={handleDeployDemo}
+              disabled={deployingDemo}
+            >
+              {deployingDemo
+                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Desplegando en Netlify…</>
+                : <><Rocket className="h-3.5 w-3.5" />Deploy Demo en Netlify</>}
+            </Button>
+
+            <div className="flex items-center gap-2 text-xs text-gray-600">
+              <div className="flex-1 h-px bg-gray-700/60" />
+              <span>o pegá la URL manualmente</span>
+              <div className="flex-1 h-px bg-gray-700/60" />
+            </div>
+
             <div className="flex gap-2">
               <input
                 type="url"
