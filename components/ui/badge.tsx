@@ -19,6 +19,8 @@ const badgeVariants = cva(
           'bg-red-500/20 text-red-300 ring-1 ring-inset ring-red-500/30',
         outline:
           'bg-transparent text-gray-300 ring-1 ring-inset ring-gray-600',
+        demo:
+          'bg-violet-500/20 text-violet-300 ring-1 ring-inset ring-violet-500/40 font-semibold',
       },
     },
     defaultVariants: {

@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import {
   Phone, Mail, Instagram, MapPin, Star, Plus,
-  ChevronDown, ExternalLink, X, Search,
+  ChevronDown, ExternalLink, X, Search, Link2, Send, Check, Loader2,
 } from 'lucide-react'
 import { Lead } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,11 +22,12 @@ import { cn } from '@/lib/utils'
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 
-const STAGES: { value: string; label: string; variant: 'secondary' | 'default' | 'warning' | 'success' | 'destructive' | 'outline' }[] = [
+const STAGES: { value: string; label: string; variant: 'secondary' | 'default' | 'warning' | 'success' | 'destructive' | 'outline' | 'demo' | null | undefined }[] = [
   { value: 'new',           label: 'Nuevo',            variant: 'secondary' },
   { value: 'contacted',     label: 'Contactado',       variant: 'default' },
   { value: 'interested',    label: 'Interesado',       variant: 'warning' },
   { value: 'proposal_sent', label: 'Propuesta',        variant: 'outline' },
+  { value: 'demo_sent',     label: 'Demo Enviada',     variant: 'demo' },
   { value: 'closed',        label: 'Cerrado',          variant: 'success' },
   { value: 'lost',          label: 'Perdido',          variant: 'destructive' },
 ]
@@ -89,8 +90,13 @@ function LeadDetailDialog({
 }) {
   const [notes, setNotes] = useState(lead.notes ?? '')
   const [stage, setStage] = useState(lead.stage)
+  const [demoUrl, setDemoUrl] = useState(lead.demoUrl ?? '')
   const [saving, setSaving] = useState(false)
+  const [savingDemo, setSavingDemo] = useState(false)
+  const [sendingDemo, setSendingDemo] = useState(false)
+  const [demoSent, setDemoSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [demoMsg, setDemoMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
 
   const stageInfo = STAGES.find((s) => s.value === stage)
 
@@ -109,12 +115,63 @@ function LeadDetailDialog({
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Error al guardar'); return }
-      onUpdated({ ...lead, stage, notes, lastContact: new Date() })
+      onUpdated({ ...lead, stage, notes, demoUrl: demoUrl || null, lastContact: new Date() })
       onClose()
     } catch {
       setError('Error de red')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveDemoUrl = async () => {
+    setSavingDemo(true)
+    setDemoMsg(null)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ demoUrl: demoUrl.trim() || null }),
+      })
+      if (!res.ok) {
+        const d = await res.json() as { error?: string }
+        throw new Error(d.error ?? 'Error al guardar')
+      }
+      setDemoMsg({ text: 'Demo URL guardada', type: 'ok' })
+      setTimeout(() => setDemoMsg(null), 3000)
+    } catch (e) {
+      setDemoMsg({ text: (e as Error).message, type: 'err' })
+    } finally {
+      setSavingDemo(false)
+    }
+  }
+
+  const handleSendDemo = async () => {
+    if (!lead.email) { setDemoMsg({ text: 'El lead no tiene email', type: 'err' }); return }
+    if (!demoUrl.trim()) { setDemoMsg({ text: 'Primero guardá la Demo URL', type: 'err' }); return }
+    setSendingDemo(true)
+    setDemoMsg(null)
+    try {
+      const res = await fetch('/api/outreach/send-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead_id:      lead.id,
+          clinic_name:  lead.clinicName,
+          contact_name: lead.contactName ?? lead.clinicName,
+          email:        lead.email,
+          demo_url:     demoUrl.trim(),
+        }),
+      })
+      const data = await res.json() as { success?: boolean; error?: string }
+      if (!res.ok) throw new Error(data.error ?? 'Error al enviar')
+      setDemoSent(true)
+      setDemoMsg({ text: '✅ Demo enviada por email', type: 'ok' })
+      onUpdated({ ...lead, stage: 'demo_sent', demoUrl: demoUrl.trim(), lastContact: new Date() })
+    } catch (e) {
+      setDemoMsg({ text: (e as Error).message, type: 'err' })
+    } finally {
+      setSendingDemo(false)
     }
   }
 
@@ -200,6 +257,63 @@ function LeadDetailDialog({
               <p className="text-sm text-gray-300">{lead.address}</p>
             </div>
           )}
+
+          {/* Demo URL */}
+          <div className="rounded-xl border border-violet-500/20 bg-violet-500/5 p-4 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-400 flex items-center gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Demo URL
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                value={demoUrl}
+                onChange={(e) => setDemoUrl(e.target.value)}
+                placeholder="https://clinica-demo.netlify.app"
+                className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSaveDemoUrl}
+                disabled={savingDemo}
+                className="shrink-0"
+              >
+                {savingDemo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Guardar'}
+              </Button>
+            </div>
+
+            {/* Botón Enviar Demo — visible solo si hay URL */}
+            {demoUrl.trim() && (
+              <Button
+                className="w-full gap-2"
+                onClick={handleSendDemo}
+                disabled={sendingDemo || demoSent || !lead.email}
+              >
+                {sendingDemo ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" />Enviando email…</>
+                ) : demoSent ? (
+                  <><Check className="h-4 w-4" />Demo enviada</>
+                ) : (
+                  <><Send className="h-4 w-4" />Enviar Demo por Email</>
+                )}
+              </Button>
+            )}
+            {!lead.email && demoUrl.trim() && (
+              <p className="text-xs text-amber-400">⚠ Este lead no tiene email registrado</p>
+            )}
+
+            {/* Feedback demo */}
+            {demoMsg && (
+              <div className={cn(
+                'flex items-center gap-2 rounded-lg px-3 py-2 text-xs',
+                demoMsg.type === 'ok'
+                  ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                  : 'border border-red-500/30 bg-red-500/10 text-red-400'
+              )}>
+                {demoMsg.text}
+              </div>
+            )}
+          </div>
 
           {/* Notas */}
           <div>
@@ -287,7 +401,7 @@ function AddLeadDialog({
         assignedAgent: raw.assigned_agent ?? null, instagram: raw.instagram ?? null,
         address: raw.address ?? null, leadScore: raw.lead_score ?? null,
         foundBy: raw.found_by ?? null, source: raw.source ?? null,
-        notes: raw.notes ?? null,
+        notes: raw.notes ?? null, demoUrl: raw.demo_url ?? null,
         lastContact: raw.last_contact ? new Date(raw.last_contact) : null,
         createdAt: new Date(raw.created_at),
       }

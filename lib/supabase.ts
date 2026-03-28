@@ -303,6 +303,7 @@ export interface Lead {
   foundBy: string | null
   source: string | null
   notes: string | null
+  demoUrl: string | null
   lastContact: Date | null
   createdAt: Date
 }
@@ -324,6 +325,7 @@ function mapLead(row: DbRow): Lead {
     foundBy:       (row.found_by ?? null) as string | null,
     source:        (row.source ?? null) as string | null,
     notes:         (row.notes ?? null) as string | null,
+    demoUrl:       (row.demo_url ?? null) as string | null,
     lastContact:   row.last_contact ? new Date(row.last_contact as string) : null,
     createdAt:     new Date((row.created_at ?? new Date().toISOString()) as string),
   }

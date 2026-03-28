@@ -14,6 +14,7 @@ export async function PATCH(
     assignedAgent?: string
     notes?: string
     lastContact?: string
+    demoUrl?: string | null
   }
   try {
     body = await req.json()
@@ -30,6 +31,7 @@ export async function PATCH(
   if (body.assignedAgent !== undefined) updates.assigned_agent = body.assignedAgent
   if (body.notes !== undefined) updates.notes = body.notes
   if (body.lastContact !== undefined) updates.last_contact = body.lastContact
+  if (body.demoUrl !== undefined) updates.demo_url = body.demoUrl
 
   const { data: lead, error } = await supabaseAdmin
     .from('leads')
@@ -47,7 +49,8 @@ export async function PATCH(
   if (body.stage) {
     const stageLabels: Record<string, string> = {
       new: 'Nuevo', contacted: 'Contactado', interested: 'Interesado',
-      proposal_sent: 'Propuesta enviada', closed: 'Cerrado', lost: 'Perdido',
+      proposal_sent: 'Propuesta enviada', demo_sent: 'Demo enviada',
+      closed: 'Cerrado', lost: 'Perdido',
     }
     await supabaseAdmin.from('activity_log').insert({
       agent_id:   body.assignedAgent ?? 'system',
