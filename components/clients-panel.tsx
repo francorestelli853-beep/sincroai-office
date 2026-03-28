@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Building2, Mail, Phone, Instagram, MapPin, ChevronRight, Plus, X, Check, Circle } from 'lucide-react'
+import { useState, useMemo, useCallback } from 'react'
+import { Building2, Mail, Phone, Instagram, MapPin, ChevronRight, Plus, X, Check, Circle, Globe, Loader2, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import type { Client, OnboardingItem } from '@/lib/supabase'
 
@@ -173,6 +174,75 @@ function ChecklistItem({
         {item.name}
       </span>
       <span className="text-xs text-gray-600">Paso {item.step}</span>
+    </button>
+  )
+}
+
+// ─── Generar Web (inline en dialog) ─────────────────────────────────────────────
+
+function GenerateWebInlineButton({ clientId, clinicName }: { clientId: string; clinicName: string }) {
+  const [loading, setLoading] = useState(false)
+  const [done, setDone]       = useState(false)
+  const [err, setErr]         = useState<string | null>(null)
+
+  const handleGenerate = useCallback(async () => {
+    setLoading(true)
+    setErr(null)
+    setDone(false)
+    try {
+      const res = await fetch(`/api/clients/${clientId}/generate-web`, { method: 'POST' })
+      if (!res.ok) {
+        const body = await res.json() as { error?: string }
+        throw new Error(body.error ?? 'Error al generar')
+      }
+      const blob = await res.blob()
+      const url  = URL.createObjectURL(blob)
+      const disposition = res.headers.get('Content-Disposition') ?? ''
+      const match = disposition.match(/filename="([^"]+)"/)
+      const fileName = match?.[1] ?? `web-${clinicName.toLowerCase().replace(/\s+/g, '-')}.html`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = fileName
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 10_000)
+      setDone(true)
+      setTimeout(() => setDone(false), 4000)
+    } catch (e) {
+      setErr((e as Error).message)
+      setTimeout(() => setErr(null), 5000)
+    } finally {
+      setLoading(false)
+    }
+  }, [clientId, clinicName])
+
+  if (err) {
+    return (
+      <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400 text-center">
+        {err}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={handleGenerate}
+      disabled={loading}
+      className={cn(
+        'flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-all',
+        done
+          ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-400'
+          : 'bg-violet-600 text-white hover:bg-violet-500 shadow-lg shadow-violet-900/30 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed'
+      )}
+    >
+      {loading ? (
+        <><Loader2 className="h-4 w-4 animate-spin" />Generando web…</>
+      ) : done ? (
+        <><Check className="h-4 w-4" />Descargando…</>
+      ) : (
+        <><Globe className="h-4 w-4" />Generar Web del Cliente</>
+      )}
     </button>
   )
 }
@@ -358,6 +428,18 @@ function ClientDetailDialog({
           )}
 
           <p className="text-xs text-gray-600">Alta: {formatDate(localClient.createdAt)}</p>
+
+          {/* Acciones web */}
+          <div className="pt-1 border-t border-gray-800 flex flex-col gap-2">
+            <GenerateWebInlineButton clientId={localClient.id} clinicName={localClient.clinicName} />
+            <Link
+              href={`/clients/${localClient.id}`}
+              className="flex items-center justify-center gap-2 rounded-lg border border-gray-700 py-2 text-sm text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Ver detalle completo
+            </Link>
+          </div>
         </div>
       </div>
     </div>
