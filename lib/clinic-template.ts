@@ -66,8 +66,13 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       --nav-h:         72px;
       --max-w:         1160px;
       --radius:        4px;
-      --ease:          cubic-bezier(0.4, 0, 0.2, 1);
-      --t:             220ms var(--ease);
+      /* Easing curves — Emil Kowalski principles */
+      --ease-out:      cubic-bezier(0.23, 1, 0.32, 1);   /* entering elements */
+      --ease-in-out:   cubic-bezier(0.77, 0, 0.175, 1);  /* on-screen movement */
+      --ease-drawer:   cubic-bezier(0.32, 0.72, 0, 1);   /* drawers / overlays */
+      /* --ease kept for legacy references; now points to ease-out */
+      --ease:          cubic-bezier(0.23, 1, 0.32, 1);
+      --t:             220ms var(--ease-out);
     }
 
     /* ── Contenedor ──────────────────────────────────────────────── */
@@ -120,40 +125,47 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       font-weight: 500;
       letter-spacing: 0.025em;
       border-radius: var(--radius);
-      transition: background var(--t), color var(--t), border-color var(--t), transform var(--t), box-shadow var(--t);
+      /* Only animate specific properties — never transition: all */
+      transition: background 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  border-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 160ms ease-out;
       white-space: nowrap;
       cursor: pointer;
     }
-    .btn:active { transform: translateY(1px) !important; }
+    /* Active scale — always present, not just on hover */
+    .btn:active { transform: scale(0.97) !important; }
     .btn-primary {
       background: var(--primary);
       color: var(--bg-dark);
       border: 1.5px solid var(--primary);
-    }
-    .btn-primary:hover {
-      background: var(--primary-dark);
-      border-color: var(--primary-dark);
-      color: var(--bg-dark);
-      transform: translateY(-1px);
     }
     .btn-outline {
       background: transparent;
       color: var(--text);
       border: 1.5px solid var(--border);
     }
-    .btn-outline:hover {
-      border-color: var(--text-mid);
-      transform: translateY(-1px);
-    }
     .btn-dark {
       background: var(--text);
       color: var(--white);
       border: 1.5px solid var(--text);
     }
-    .btn-dark:hover {
-      background: #2E2A27;
-      border-color: #2E2A27;
-      transform: translateY(-1px);
+    /* Hover states gated behind pointer-capable devices */
+    @media (hover: hover) and (pointer: fine) {
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        color: var(--bg-dark);
+      }
+      .btn-outline:hover {
+        border-color: var(--text-mid);
+      }
+      .btn-dark:hover {
+        background: #2E2A27;
+        border-color: #2E2A27;
+      }
     }
     .btn-sm { padding: 10px 20px; font-size: 13px; }
     .btn-full { width: 100%; }
@@ -165,7 +177,7 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       z-index: 800;
       height: var(--nav-h);
       border-bottom: 1px solid transparent;
-      transition: background var(--t), border-color var(--t), backdrop-filter var(--t);
+      transition: background 220ms var(--ease-out), border-color 220ms var(--ease-out), backdrop-filter 220ms var(--ease-out);
     }
     .nav.scrolled {
       background: rgba(250, 247, 244, 0.90);
@@ -200,9 +212,11 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       font-weight: 400;
       letter-spacing: 0.04em;
       color: var(--text-muted);
-      transition: color var(--t);
+      transition: color 160ms var(--ease-out);
     }
-    .nav-links a:hover { color: var(--text); }
+    @media (hover: hover) and (pointer: fine) {
+      .nav-links a:hover { color: var(--text); }
+    }
     .nav-right {
       display: flex;
       align-items: center;
@@ -223,9 +237,9 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       width: 22px;
       height: 1.5px;
       background: var(--text);
-      transition: transform var(--t), opacity var(--t);
+      transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
     }
-    /* Mobile overlay */
+    /* Mobile overlay — uses @starting-style for enter animation */
     .nav-overlay {
       position: fixed;
       inset: 0;
@@ -238,9 +252,15 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       gap: 0;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 300ms var(--ease);
+      transition: opacity 300ms var(--ease-drawer), display 300ms allow-discrete;
     }
-    .nav-overlay.open { opacity: 1; pointer-events: all; }
+    .nav-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    @starting-style {
+      .nav-overlay.open { opacity: 0; }
+    }
     .nav-overlay-links {
       display: flex;
       flex-direction: column;
@@ -254,10 +274,12 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       font-weight: 300;
       letter-spacing: -0.02em;
       color: rgba(255,255,255,0.7);
-      transition: color var(--t);
+      transition: color 160ms var(--ease-out);
       padding: 6px 0;
     }
-    .nav-overlay-links a:hover { color: var(--white); }
+    @media (hover: hover) and (pointer: fine) {
+      .nav-overlay-links a:hover { color: var(--white); }
+    }
     .nav-overlay-actions {
       display: flex;
       flex-direction: column;
@@ -274,9 +296,12 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       color: rgba(255,255,255,0.4);
-      transition: color var(--t);
+      transition: color 160ms var(--ease-out), transform 160ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease-out;
     }
-    .nav-overlay-close:hover { color: rgba(255,255,255,0.9); }
+    .nav-overlay-close:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) {
+      .nav-overlay-close:hover { color: rgba(255,255,255,0.9); }
+    }
 
     /* ── Hero ────────────────────────────────────────────────────── */
     .hero {
@@ -436,10 +461,12 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       background: var(--bg-alt);
       border-right: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      transition: background var(--t);
+      transition: background 220ms var(--ease-out);
       cursor: default;
     }
-    .service-card:hover { background: var(--white); }
+    @media (hover: hover) and (pointer: fine) {
+      .service-card:hover { background: var(--white); }
+    }
     .service-card:nth-child(3n) { border-right: none; }
     .service-name {
       font-family: var(--font-serif);
@@ -596,7 +623,7 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       outline: none;
       border-radius: 0;
       -webkit-appearance: none;
-      transition: border-color var(--t);
+      transition: border-color 160ms var(--ease-out);
     }
     .form-input::placeholder { color: var(--text-light); font-weight: 300; }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
@@ -705,10 +732,12 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       gap: 18px;
       padding: 22px 0;
       border-bottom: 1px solid var(--border);
-      transition: opacity var(--t);
+      transition: opacity 160ms var(--ease-out);
     }
     .contact-item:first-child { border-top: 1px solid var(--border); }
-    .contact-item:hover { opacity: 0.72; }
+    @media (hover: hover) and (pointer: fine) {
+      .contact-item:hover { opacity: 0.72; }
+    }
     .contact-item-icon {
       width: 38px;
       height: 38px;
@@ -735,8 +764,10 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       color: var(--text);
       line-height: 1.5;
     }
-    .contact-item-value a { transition: color var(--t); }
-    .contact-item-value a:hover { color: var(--primary-dark); }
+    .contact-item-value a { transition: color 160ms var(--ease-out); }
+    @media (hover: hover) and (pointer: fine) {
+      .contact-item-value a:hover { color: var(--primary-dark); }
+    }
     .contact-map-wrap {
       background: var(--bg-alt);
       border: 1px solid var(--border);
@@ -813,9 +844,11 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       font-size: 13.5px;
       font-weight: 300;
       color: rgba(255,255,255,0.5);
-      transition: color var(--t);
+      transition: color 160ms var(--ease-out);
     }
-    .footer-nav a:hover { color: rgba(255,255,255,0.88); }
+    @media (hover: hover) and (pointer: fine) {
+      .footer-nav a:hover { color: rgba(255,255,255,0.88); }
+    }
     .footer-hours { display: flex; flex-direction: column; gap: 9px; }
     .footer-hour-row {
       display: flex;
@@ -833,8 +866,10 @@ export const clinicTemplate: string = `<!DOCTYPE html>
     }
     .footer-copy { font-size: 12.5px; color: rgba(255,255,255,0.22); }
     .footer-powered { font-size: 12.5px; color: rgba(255,255,255,0.28); }
-    .footer-powered a { color: rgba(255,255,255,0.45); transition: color var(--t); }
-    .footer-powered a:hover { color: var(--primary); }
+    .footer-powered a { color: rgba(255,255,255,0.45); transition: color 160ms var(--ease-out); }
+    @media (hover: hover) and (pointer: fine) {
+      .footer-powered a:hover { color: var(--primary); }
+    }
 
     /* ── FABs ────────────────────────────────────────────────────── */
     .fabs {
@@ -855,11 +890,15 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       box-shadow: 0 3px 14px rgba(0,0,0,0.16);
-      transition: transform var(--t), box-shadow var(--t);
+      transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 160ms ease-out;
       flex-shrink: 0;
     }
-    .fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-    .fab:active { transform: translateY(0); }
+    .fab:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) {
+      .fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+    }
     .fab-chat { background: var(--primary); }
     .fab-wa { background: var(--whatsapp); }
     .fab svg { width: 24px; height: 24px; }
@@ -881,13 +920,16 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       overflow: hidden;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(12px);
-      transition: opacity var(--t), transform var(--t);
+      transform: translateY(16px);
+      transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
     }
     .chat-window.open {
       opacity: 1;
       pointer-events: all;
       transform: translateY(0);
+    }
+    @starting-style {
+      .chat-window.open { opacity: 0; transform: translateY(16px); }
     }
     .chat-header {
       background: var(--bg-dark);
@@ -905,8 +947,16 @@ export const clinicTemplate: string = `<!DOCTYPE html>
     }
     .chat-header-name { font-size: 13.5px; font-weight: 500; color: var(--white); }
     .chat-header-status { font-size: 11px; color: rgba(255,255,255,0.38); margin-top: 1px; }
-    .chat-header-close { color: rgba(255,255,255,0.38); transition: color var(--t); }
-    .chat-header-close:hover { color: rgba(255,255,255,0.85); }
+    .chat-header-close {
+      color: rgba(255,255,255,0.38);
+      transition: color 160ms var(--ease-out),
+                  transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 160ms ease-out;
+    }
+    .chat-header-close:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) {
+      .chat-header-close:hover { color: rgba(255,255,255,0.85); }
+    }
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -953,9 +1003,16 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       font-size: 12px;
       color: var(--text-mid);
       background: var(--white);
-      transition: background var(--t), color var(--t), border-color var(--t);
+      transition: background 160ms var(--ease-out),
+                  color 160ms var(--ease-out),
+                  border-color 160ms var(--ease-out),
+                  transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 160ms ease-out;
     }
-    .chat-qr:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    .chat-qr:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) {
+      .chat-qr:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+    }
     .chat-input-row {
       display: flex;
       gap: 8px;
@@ -976,6 +1033,7 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       outline: none;
       transition: border-color var(--t);
     }
+    .chat-input { transition: border-color 160ms var(--ease-out); }
     .chat-input:focus { border-color: var(--primary); }
     .chat-send {
       width: 34px; height: 34px;
@@ -985,9 +1043,14 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: background var(--t);
+      transition: background 160ms var(--ease-out),
+                  transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 160ms ease-out;
     }
-    .chat-send:hover { background: var(--primary-dark); }
+    .chat-send:active { transform: scale(0.97); }
+    @media (hover: hover) and (pointer: fine) {
+      .chat-send:hover { background: var(--primary-dark); }
+    }
     .chat-send svg { width: 14px; height: 14px; color: white; }
 
     /* ── Overlay de éxito ────────────────────────────────────────── */
@@ -1003,9 +1066,12 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 300ms var(--ease);
+      transition: opacity 300ms var(--ease-out);
     }
     .success-overlay.show { opacity: 1; pointer-events: all; }
+    @starting-style {
+      .success-overlay.show { opacity: 0; }
+    }
     .success-box {
       text-align: center;
       max-width: 420px;
@@ -1038,17 +1104,37 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       margin-bottom: 32px;
     }
 
-    /* ── Animaciones ─────────────────────────────────────────────── */
+    /* ── Animaciones de entrada ──────────────────────────────────── */
+    /* Elements enter from translateY(16px), never scale(0) */
     .fade-up {
       opacity: 0;
-      transform: translateY(26px);
-      transition: opacity 0.65s var(--ease), transform 0.65s var(--ease);
+      transform: translateY(16px);
+      transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1),
+                  transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
     }
-    .fade-up.in { opacity: 1; transform: translateY(0); }
-    .d1 { transition-delay: 0.08s; }
-    .d2 { transition-delay: 0.16s; }
-    .d3 { transition-delay: 0.24s; }
-    .d4 { transition-delay: 0.32s; }
+    .fade-up.in { opacity: 1; transform: none; }
+    .d1 { transition-delay: 60ms; }
+    .d2 { transition-delay: 120ms; }
+    .d3 { transition-delay: 180ms; }
+    .d4 { transition-delay: 240ms; }
+
+    /* ── Scroll-reveal system (IntersectionObserver) ─────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1),
+                  transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    /* Stagger children via CSS custom property */
+    .reveal-stagger > * {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 500ms cubic-bezier(0.23, 1, 0.32, 1),
+                  transform 500ms cubic-bezier(0.23, 1, 0.32, 1);
+      transition-delay: calc(var(--i, 0) * 60ms);
+    }
+    .reveal-stagger.visible > * { opacity: 1; transform: none; }
 
     /* ── Responsive ──────────────────────────────────────────────── */
     @media (max-width: 1080px) {
@@ -1750,6 +1836,7 @@ async function loadServices() {
     });
     // Reiniciar animaciones para las nuevas cards
     observeAnimations();
+    initReveal();
   } catch (err) {
     console.warn('[loadServices]', err.message);
     grid.innerHTML = \`
@@ -2079,12 +2166,18 @@ function closeChatWindow() {
 }
 
 /* ================================================================
-   SCROLL ANIMATIONS
+   SCROLL ANIMATIONS — Emil Kowalski principles
+   - Entrance: opacity 0 + translateY(16-24px) → never scale(0)
+   - IntersectionObserver adds .visible / .in
+   - Children stagger via CSS --i custom property
+   - No animation on keyboard-triggered form submits (instant)
 ================================================================ */
 function initAnimations() {
   observeAnimations();
+  initReveal();
 }
 
+/* Legacy .fade-up observer (used by HTML markup) */
 function observeAnimations() {
   const els = document.querySelectorAll('.fade-up:not(.observed)');
   const observer = new IntersectionObserver((entries) => {
@@ -2100,6 +2193,43 @@ function observeAnimations() {
     el.classList.add('observed');
     observer.observe(el);
   });
+}
+
+/* New .reveal / .reveal-stagger system */
+function initReveal() {
+  /* Auto-add .reveal to section headings, grids, and cards not already animated */
+  const autoReveal = document.querySelectorAll(
+    'section:not(.hero) .section-hd:not(.fade-up):not(.reveal),' +
+    '.services-grid:not(.reveal-stagger):not(.reveal),' +
+    '.testimonials-grid:not(.reveal-stagger):not(.reveal),' +
+    '.booking-form-wrap:not(.fade-up):not(.reveal),' +
+    '.contact-items:not(.fade-up):not(.reveal),' +
+    '.contact-map-wrap:not(.fade-up):not(.reveal),' +
+    '.footer-top:not(.reveal)'
+  );
+  autoReveal.forEach(el => el.classList.add('reveal'));
+
+  /* Wire up stagger indices for direct children of .reveal-stagger */
+  document.querySelectorAll('.reveal-stagger').forEach(parent => {
+    Array.from(parent.children).forEach((child, i) => {
+      child.style.setProperty('--i', i);
+    });
+  });
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.07, rootMargin: '0px 0px -32px 0px' });
+
+  document.querySelectorAll('.reveal:not(.reveal-observed), .reveal-stagger:not(.reveal-observed)')
+    .forEach(el => {
+      el.classList.add('reveal-observed');
+      revealObserver.observe(el);
+    });
 }
 
 /* ================================================================
