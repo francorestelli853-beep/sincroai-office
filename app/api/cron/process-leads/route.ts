@@ -324,8 +324,8 @@ export async function GET(req: NextRequest) {
 
       results.push({ id: lead.id, clinic: clinicName, status: 'ok', url: demoUrl, emailId: emailData?.id })
 
-      // Pausa entre envíos para no saturar Resend/Netlify
-      await new Promise(r => setTimeout(r, 2000))
+      // Pausa entre envíos para no saturar Resend/Netlify (429 rate limit)
+      await new Promise(r => setTimeout(r, 5000))
 
     } catch (err) {
       const msg = (err as Error).message
