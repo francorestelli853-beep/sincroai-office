@@ -32,6 +32,10 @@ export async function PATCH(
   if (body.notes !== undefined) updates.notes = body.notes
   if (body.lastContact !== undefined) updates.last_contact = body.lastContact
   if (body.demoUrl !== undefined) updates.demo_url = body.demoUrl
+  if ((body as Record<string, unknown>).email !== undefined) updates.email = (body as Record<string, unknown>).email
+  if ((body as Record<string, unknown>).phone !== undefined) updates.phone = (body as Record<string, unknown>).phone
+  if ((body as Record<string, unknown>).instagram !== undefined) updates.instagram = (body as Record<string, unknown>).instagram
+  if ((body as Record<string, unknown>).contactName !== undefined) updates.contact_name = (body as Record<string, unknown>).contactName
 
   const { data: lead, error } = await supabaseAdmin
     .from('leads')
@@ -95,4 +99,18 @@ export async function PATCH(
   }
 
   return NextResponse.json({ lead })
+}
+
+// DELETE /api/leads/[id] — elimina el lead
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params
+  const { error } = await supabaseAdmin.from('leads').delete().eq('id', id)
+  if (error) {
+    console.error('[DELETE /api/leads/:id] error:', error.message)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+  return NextResponse.json({ ok: true })
 }

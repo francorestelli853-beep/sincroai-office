@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import {
   Phone, Mail, Instagram, MapPin, Star, Plus,
-  ChevronDown, ExternalLink, X, Search, Link2, Send, Check, Loader2, Rocket,
+  ChevronDown, ExternalLink, X, Search, Link2, Send, Check, Loader2, Rocket, Trash2, Pencil,
 } from 'lucide-react'
 import { Lead } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
@@ -25,9 +25,9 @@ import { cn } from '@/lib/utils'
 const STAGES: { value: string; label: string; variant: 'secondary' | 'default' | 'warning' | 'success' | 'destructive' | 'outline' | 'demo' | null | undefined }[] = [
   { value: 'new',           label: 'Nuevo',            variant: 'secondary' },
   { value: 'contacted',     label: 'Contactado',       variant: 'default' },
+  { value: 'demo_sent',     label: 'Demo Enviada',     variant: 'demo' },
   { value: 'interested',    label: 'Interesado',       variant: 'warning' },
   { value: 'proposal_sent', label: 'Propuesta',        variant: 'outline' },
-  { value: 'demo_sent',     label: 'Demo Enviada',     variant: 'demo' },
   { value: 'closed',        label: 'Cerrado',          variant: 'success' },
   { value: 'lost',          label: 'Perdido',          variant: 'destructive' },
 ]
@@ -98,6 +98,16 @@ function LeadDetailDialog({
   const [deployingDemo, setDeployingDemo] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [demoMsg, setDemoMsg] = useState<{ text: string; type: 'ok' | 'err' } | null>(null)
+  // Edición de contacto
+  const [editingContact, setEditingContact] = useState(false)
+  const [editEmail, setEditEmail] = useState(lead.email ?? '')
+  const [editPhone, setEditPhone] = useState(lead.phone ?? '')
+  const [editInstagram, setEditInstagram] = useState(lead.instagram ?? '')
+  const [editContactName, setEditContactName] = useState(lead.contactName ?? '')
+  const [savingContact, setSavingContact] = useState(false)
+  // Eliminar
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const stageInfo = STAGES.find((s) => s.value === stage)
 
@@ -207,6 +217,36 @@ function LeadDetailDialog({
     }
   }
 
+  const handleSaveContact = async () => {
+    setSavingContact(true)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:       editEmail.trim() || null,
+          phone:       editPhone.trim() || null,
+          instagram:   editInstagram.trim() || null,
+          contactName: editContactName.trim() || null,
+        }),
+      })
+      if (!res.ok) { const d = await res.json() as { error?: string }; throw new Error(d.error ?? 'Error') }
+      onUpdated({ ...lead, email: editEmail.trim() || null, phone: editPhone.trim() || null, instagram: editInstagram.trim() || null, contactName: editContactName.trim() || null })
+      setEditingContact(false)
+    } catch (e) { setError((e as Error).message) }
+    finally { setSavingContact(false) }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, { method: 'DELETE' })
+      if (!res.ok) { const d = await res.json() as { error?: string }; throw new Error(d.error ?? 'Error al eliminar') }
+      onUpdated({ ...lead, stage: '__deleted__' })
+      onClose()
+    } catch (e) { setError((e as Error).message); setDeleting(false); setConfirmDelete(false) }
+  }
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg">
@@ -231,54 +271,75 @@ function LeadDetailDialog({
             </Select>
           </div>
 
-          {/* Info grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {lead.contactName && (
-              <div className="rounded-lg bg-gray-800/50 p-3">
-                <p className="text-xs text-muted-foreground">Contacto</p>
-                <p className="mt-0.5 text-sm font-medium text-white">{lead.contactName}</p>
+          {/* Info grid — editable */}
+          <div className="rounded-xl border border-gray-800 bg-gray-800/30 p-3 space-y-2">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contacto</p>
+              <button
+                onClick={() => { setEditingContact((v) => !v); setError(null) }}
+                className="flex items-center gap-1 rounded px-2 py-0.5 text-[11px] text-gray-500 hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
+              >
+                <Pencil className="h-3 w-3" />
+                {editingContact ? 'Cancelar' : 'Editar'}
+              </button>
+            </div>
+
+            {editingContact ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="mb-1 block text-[10px] text-muted-foreground">Nombre contacto</label>
+                    <input value={editContactName} onChange={(e) => setEditContactName(e.target.value)} placeholder="Nombre" className="w-full rounded-lg border border-gray-700 bg-gray-800 px-2 py-1.5 text-sm text-white placeholder-gray-600 outline-none focus:border-violet-500" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-[10px] text-muted-foreground">Teléfono</label>
+                    <input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="+54 11..." className="w-full rounded-lg border border-gray-700 bg-gray-800 px-2 py-1.5 text-sm text-white placeholder-gray-600 outline-none focus:border-violet-500" />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] text-muted-foreground">Email</label>
+                  <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="email@clinica.com" className="w-full rounded-lg border border-gray-700 bg-gray-800 px-2 py-1.5 text-sm text-white placeholder-gray-600 outline-none focus:border-violet-500" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] text-muted-foreground">Instagram</label>
+                  <input value={editInstagram} onChange={(e) => setEditInstagram(e.target.value)} placeholder="@clinica" className="w-full rounded-lg border border-gray-700 bg-gray-800 px-2 py-1.5 text-sm text-white placeholder-gray-600 outline-none focus:border-violet-500" />
+                </div>
+                <Button size="sm" className="w-full" onClick={handleSaveContact} disabled={savingContact}>
+                  {savingContact ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Guardando…</> : <><Check className="h-3.5 w-3.5" />Guardar contacto</>}
+                </Button>
               </div>
-            )}
-            {lead.leadScore !== null && (
-              <div className="rounded-lg bg-gray-800/50 p-3">
-                <p className="text-xs text-muted-foreground">Lead Score</p>
-                <ScoreBar score={lead.leadScore} />
-              </div>
-            )}
-            {lead.email && (
-              <div className="rounded-lg bg-gray-800/50 p-3">
-                <p className="text-xs text-muted-foreground">Email</p>
-                <a href={`mailto:${lead.email}`} className="mt-0.5 text-sm text-violet-400 hover:underline break-all">
-                  {lead.email}
-                </a>
-              </div>
-            )}
-            {lead.phone && (
-              <div className="rounded-lg bg-gray-800/50 p-3">
-                <p className="text-xs text-muted-foreground">Teléfono</p>
-                <a href={`tel:${lead.phone}`} className="mt-0.5 text-sm text-violet-400 hover:underline">
-                  {lead.phone}
-                </a>
-              </div>
-            )}
-            {lead.instagram && (
-              <div className="rounded-lg bg-gray-800/50 p-3">
-                <p className="text-xs text-muted-foreground">Instagram</p>
-                <a
-                  href={`https://instagram.com/${lead.instagram.replace('@', '')}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="mt-0.5 flex items-center gap-1 text-sm text-violet-400 hover:underline"
-                >
-                  {lead.instagram} <ExternalLink className="h-3 w-3" />
-                </a>
-              </div>
-            )}
-            {lead.foundBy && (
-              <div className="rounded-lg bg-gray-800/50 p-3">
-                <p className="text-xs text-muted-foreground">Encontrado por</p>
-                <p className="mt-0.5 text-sm text-white">
-                  {AGENT_AVATARS[lead.foundBy] ?? '🤖'} {lead.foundBy}
-                </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {lead.contactName && (
+                  <div><p className="text-[10px] text-muted-foreground">Nombre</p><p className="text-sm text-white">{lead.contactName}</p></div>
+                )}
+                {lead.leadScore !== null && (
+                  <div><p className="text-[10px] text-muted-foreground">Lead Score</p><ScoreBar score={lead.leadScore} /></div>
+                )}
+                {lead.email ? (
+                  <div className="col-span-2"><p className="text-[10px] text-muted-foreground">Email</p>
+                    <a href={`mailto:${lead.email}`} className="text-sm text-violet-400 hover:underline break-all">{lead.email}</a>
+                  </div>
+                ) : (
+                  <div className="col-span-2"><p className="text-[10px] text-amber-500">Sin email — hacé clic en Editar para agregarlo</p></div>
+                )}
+                {lead.phone && (
+                  <div><p className="text-[10px] text-muted-foreground">Teléfono</p>
+                    <a href={`tel:${lead.phone}`} className="text-sm text-violet-400 hover:underline">{lead.phone}</a>
+                  </div>
+                )}
+                {lead.instagram && (
+                  <div><p className="text-[10px] text-muted-foreground">Instagram</p>
+                    <a href={`https://instagram.com/${lead.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-violet-400 hover:underline">
+                      {lead.instagram} <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
+                {lead.foundBy && (
+                  <div><p className="text-[10px] text-muted-foreground">Encontrado por</p>
+                    <p className="text-sm text-white">{AGENT_AVATARS[lead.foundBy] ?? '🤖'} {lead.foundBy}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -386,7 +447,20 @@ function LeadDetailDialog({
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
+          {confirmDelete ? (
+            <div className="flex w-full items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2">
+              <p className="flex-1 text-xs text-red-400">¿Eliminar este lead? Esta acción no se puede deshacer.</p>
+              <Button variant="destructive" size="sm" onClick={handleDelete} disabled={deleting}>
+                {deleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Eliminar'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>No</Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-400 hover:bg-red-500/10 mr-auto" onClick={() => setConfirmDelete(true)}>
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> Eliminar lead
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={onClose} disabled={saving}>Cancelar</Button>
           <Button size="sm" onClick={handleSave} disabled={saving}>
             {saving ? 'Guardando…' : 'Guardar cambios'}
@@ -530,13 +604,15 @@ function AddLeadDialog({
 
 // ─── LEAD CARD ─────────────────────────────────────────────────────────────────
 
-function LeadCard({ lead, rowNumber, onClick, onStageChange }: {
+function LeadCard({ lead, rowNumber, onClick, onStageChange, onDelete }: {
   lead: Lead
   rowNumber: number | null
   onClick: () => void
   onStageChange: (id: string, stage: string) => Promise<void>
+  onDelete: (id: string) => void
 }) {
   const [changingStage, setChangingStage] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(false)
   const stageInfo = STAGES.find((s) => s.value === lead.stage)
 
   const handleStageChange = async (newStage: string) => {
@@ -547,7 +623,7 @@ function LeadCard({ lead, rowNumber, onClick, onStageChange }: {
 
   return (
     <Card
-      className="cursor-pointer transition-colors hover:border-gray-600"
+      className="group cursor-pointer transition-colors hover:border-gray-600"
       onClick={onClick}
     >
       <CardContent className="p-4">
@@ -569,9 +645,24 @@ function LeadCard({ lead, rowNumber, onClick, onStageChange }: {
               )}
             </div>
           </div>
-          <Badge variant={stageInfo?.variant ?? 'secondary'} className="shrink-0 text-[10px]">
-            {stageInfo?.label ?? lead.stage}
-          </Badge>
+          <div className="flex items-center gap-1 shrink-0">
+            <Badge variant={stageInfo?.variant ?? 'secondary'} className="text-[10px]">
+              {stageInfo?.label ?? lead.stage}
+            </Badge>
+            {confirmDel ? (
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                <button onClick={() => onDelete(lead.id)} className="rounded px-1.5 py-0.5 text-[10px] font-medium bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors">Sí</button>
+                <button onClick={() => setConfirmDel(false)} className="rounded px-1.5 py-0.5 text-[10px] text-gray-500 hover:text-white transition-colors">No</button>
+              </div>
+            ) : (
+              <button
+                onClick={(e) => { e.stopPropagation(); setConfirmDel(true) }}
+                className="rounded p-0.5 text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Score */}
@@ -694,10 +785,23 @@ export function LeadsPanel({ initialLeads }: { initialLeads: Lead[] }) {
   }
 
   const handleLeadUpdated = (updated: Lead) => {
-    setLeads((prev) => prev.map((l) => l.id === updated.id ? updated : l))
+    if (updated.stage === '__deleted__') {
+      setLeads((prev) => prev.filter((l) => l.id !== updated.id))
+    } else {
+      setLeads((prev) => prev.map((l) => l.id === updated.id ? updated : l))
+    }
     setSelectedLead(null)
-    setSuccessMsg('✅ Lead actualizado')
+    setSuccessMsg(updated.stage === '__deleted__' ? '🗑 Lead eliminado' : '✅ Lead actualizado')
     setTimeout(() => setSuccessMsg(null), 3000)
+  }
+
+  const handleLeadDeleted = async (id: string) => {
+    const res = await fetch(`/api/leads/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setLeads((prev) => prev.filter((l) => l.id !== id))
+      setSuccessMsg('🗑 Lead eliminado')
+      setTimeout(() => setSuccessMsg(null), 3000)
+    }
   }
 
   const handleLeadCreated = (lead: Lead) => {
@@ -813,6 +917,7 @@ export function LeadsPanel({ initialLeads }: { initialLeads: Lead[] }) {
               rowNumber={lead.leadNumber}
               onClick={() => setSelectedLead(lead)}
               onStageChange={handleStageChange}
+              onDelete={handleLeadDeleted}
             />
           ))}
         </div>
