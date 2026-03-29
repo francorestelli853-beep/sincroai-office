@@ -22,6 +22,22 @@ function buildDemoEmail(params: {
   const { contactName, clinicName, demoUrl } = params
   const firstName = contactName.split(' ')[0]
 
+  // Escapar caracteres especiales → entidades HTML (evita problemas de encoding en clientes de email)
+  const esc = (s: string) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/á/g, '&aacute;').replace(/Á/g, '&Aacute;')
+    .replace(/é/g, '&eacute;').replace(/É/g, '&Eacute;')
+    .replace(/í/g, '&iacute;').replace(/Í/g, '&Iacute;')
+    .replace(/ó/g, '&oacute;').replace(/Ó/g, '&Oacute;')
+    .replace(/ú/g, '&uacute;').replace(/Ú/g, '&Uacute;')
+    .replace(/ü/g, '&uuml;') .replace(/Ü/g, '&Uuml;')
+    .replace(/ñ/g, '&ntilde;').replace(/Ñ/g, '&Ntilde;')
+
+  const safeClinic    = esc(clinicName)
+  const safeFirstName = esc(firstName)
+
   const subject = `${clinicName} — propuesta de sitio web con turnos online`
 
   const text = `Hola ${firstName},
@@ -40,6 +56,7 @@ SincroAI — sincroai.net
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
@@ -67,12 +84,12 @@ SincroAI — sincroai.net
 
               <!-- Saludo -->
               <p style="margin:0 0 20px;font-size:16px;color:#e5e7eb;line-height:1.6;">
-                Hola <strong style="color:#ffffff;">${firstName}</strong>,
+                Hola <strong style="color:#ffffff;">${safeFirstName}</strong>,
               </p>
 
               <p style="margin:0 0 20px;font-size:15px;color:#d1d5db;line-height:1.7;">
-                Vi <strong style="color:#ffffff;">${clinicName}</strong> en Instagram
-                y me tomé unos minutos para armar una propuesta de cómo podría verse
+                Vi <strong style="color:#ffffff;">${safeClinic}</strong> en Instagram
+                y me tom&eacute; unos minutos para armar una propuesta de c&oacute;mo podr&iacute;a verse
                 su sitio web profesional con sistema de turnos incluido.
               </p>
 
@@ -84,7 +101,7 @@ SincroAI — sincroai.net
                       Su demo personalizada
                     </p>
                     <p style="margin:0 0 20px;font-size:13px;color:#9ca3af;">
-                      ${clinicName} — sitio web + turnos online
+                      ${safeClinic} &mdash; sitio web + turnos online
                     </p>
                     <!-- CTA button -->
                     <a href="${demoUrl}"
@@ -123,7 +140,7 @@ SincroAI — sincroai.net
 
               <!-- CTA final -->
               <p style="margin:0 0 28px;font-size:15px;color:#d1d5db;line-height:1.7;">
-                ¿Tendrían <strong style="color:#ffffff;">15 minutos esta semana</strong>
+                &iquest;Tendr&iacute;an <strong style="color:#ffffff;">15 minutos esta semana</strong>
                 para que se los muestre en detalle?
               </p>
 
@@ -160,7 +177,7 @@ SincroAI — sincroai.net
                 <a href="tel:+5491140682555" style="color:#6b7280;text-decoration:none;">+54 11 4068-2555</a>
               </p>
               <p style="margin:16px 0 0;font-size:11px;color:#374151;">
-                Recibiste este email porque ${clinicName} forma parte de nuestra investigación de mercado.
+                Recibiste este email porque ${safeClinic} forma parte de nuestra investigaci&oacute;n de mercado.
                 <br>Si no querés recibir más mensajes, simplemente respondé "no gracias".
               </p>
             </td>
