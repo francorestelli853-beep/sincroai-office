@@ -238,15 +238,18 @@ export async function GET(req: NextRequest) {
   if (!NETLIFY_TOKEN) return NextResponse.json({ error: 'NETLIFY_TOKEN no configurado' }, { status: 500 })
   if (!RESEND_KEY)    return NextResponse.json({ error: 'RESEND_API_KEY no configurado' }, { status: 500 })
 
-  // 1. Buscar leads con email, sin demo enviada, máximo 5
-  const { data: leads, error: dbErr } = await supabaseAdmin
+  // 1. Buscar leads con email válido (solo ASCII), sin demo enviada, máximo 3
+  const { data: leadsRaw, error: dbErr } = await supabaseAdmin
     .from('leads')
     .select('id, clinic_name, contact_name, email, phone, instagram, address, stage')
     .neq('email', '')
     .not('email', 'is', null)
     .not('stage', 'in', '("demo_sent","closed","lost")')
     .order('lead_score', { ascending: false })
-    .limit(5)
+    .limit(10)
+
+  // Filtrar emails con caracteres no-ASCII (Resend los rechaza)
+  const leads = (leadsRaw ?? []).filter((l) => l.email && /^[\x00-\x7F]+$/.test(l.email)).slice(0, 3)
 
   if (dbErr) {
     console.error('[cron] Error consultando leads:', dbErr.message)
@@ -325,7 +328,7 @@ export async function GET(req: NextRequest) {
       results.push({ id: lead.id, clinic: clinicName, status: 'ok', url: demoUrl, emailId: emailData?.id })
 
       // Pausa entre envíos para no saturar Resend/Netlify (429 rate limit)
-      await new Promise(r => setTimeout(r, 5000))
+      await new Promise(r => setTimeout(r, 8000))
 
     } catch (err) {
       const msg = (err as Error).message
