@@ -29,6 +29,27 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Deduplicación: verificar si ya existe por instagram o email
+  if (instagram || email) {
+    const orFilter = [
+      instagram ? `instagram.eq.${instagram}` : null,
+      email     ? `email.eq.${email}`         : null,
+    ].filter(Boolean).join(',')
+
+    const { data: existing } = await supabaseAdmin
+      .from('leads')
+      .select('id, clinic_name, stage')
+      .or(orFilter)
+      .maybeSingle()
+
+    if (existing) {
+      return NextResponse.json(
+        { duplicate: true, existing_id: existing.id, clinic_name: existing.clinic_name, stage: existing.stage },
+        { status: 409 }
+      )
+    }
+  }
+
   const { data, error } = await supabaseAdmin
     .from('leads')
     .insert({

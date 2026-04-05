@@ -246,10 +246,10 @@ export async function GET(req: NextRequest) {
     .not('email', 'is', null)
     .not('stage', 'in', '("demo_sent","closed","lost")')
     .order('lead_score', { ascending: false })
-    .limit(10)
+    .limit(15)
 
   // Filtrar emails con caracteres no-ASCII (Resend los rechaza)
-  const leads = (leadsRaw ?? []).filter((l) => l.email && /^[\x00-\x7F]+$/.test(l.email)).slice(0, 3)
+  const leads = (leadsRaw ?? []).filter((l) => l.email && /^[\x00-\x7F]+$/.test(l.email)).slice(0, 5)
 
   if (dbErr) {
     console.error('[cron] Error consultando leads:', dbErr.message)
@@ -328,7 +328,7 @@ export async function GET(req: NextRequest) {
       results.push({ id: lead.id, clinic: clinicName, status: 'ok', url: demoUrl, emailId: emailData?.id })
 
       // Pausa entre envíos para no saturar Resend/Netlify (429 rate limit)
-      await new Promise(r => setTimeout(r, 8000))
+      await new Promise(r => setTimeout(r, 15000))
 
     } catch (err) {
       const msg = (err as Error).message

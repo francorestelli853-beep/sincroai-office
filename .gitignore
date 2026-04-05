@@ -6,3 +6,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code internal
 .claude/
+
+.vercel
+.env*.local

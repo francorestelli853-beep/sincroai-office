@@ -35,8 +35,36 @@ const lazyClient = new Proxy({} as SupabaseClient, {
 })
 
 export const supabase = lazyClient
-// supabaseAdmin es un alias — en Fase 2 se puede reemplazar por el service_role key
-export const supabaseAdmin = lazyClient
+
+// ─── ADMIN CLIENT (service_role — bypasses RLS, solo server-side) ──────────────
+let _adminClient: SupabaseClient | null = null
+
+function getSupabaseAdmin(): SupabaseClient {
+  if (!_adminClient) {
+    const url        = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_KEY
+    if (!url || !serviceKey) {
+      // fallback al cliente anon si no hay service key configurado
+      return getSupabase()
+    }
+    _adminClient = createSupabaseClient(url, serviceKey, {
+      auth: { persistSession: false },
+      global: {
+        fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+          fetch(input, { ...init, cache: 'no-store' }),
+      },
+    })
+  }
+  return _adminClient
+}
+
+const lazyAdminClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop: string | symbol) {
+    return (getSupabaseAdmin() as unknown as Record<string | symbol, unknown>)[prop]
+  },
+})
+
+export const supabaseAdmin = lazyAdminClient
 export default lazyClient
 
 // ─── MAPPERS (snake_case DB → camelCase TypeScript) ────────────────────────────

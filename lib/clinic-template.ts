@@ -1182,6 +1182,223 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       .services-grid { grid-template-columns: 1fr; }
       .service-card:nth-child(2n) { border-right: 1px solid var(--border); }
     }
+
+    /* ── Hero visual decorativa ──────────────────────────────────── */
+    .hero-visual-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(150deg, #EDE4D8 0%, #D9CBBA 40%, #C8B49A 80%, #BCA488 100%);
+    }
+    .hero-visual-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+    .hero-deco-bar {
+      position: absolute;
+      top: 0; left: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(to bottom, transparent 0%, var(--primary) 20%, var(--primary-dark) 80%, transparent 100%);
+    }
+    /* Photo area — placeholder elegante para la foto de la clínica */
+    .hero-photo-area {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-photo-frame-lg {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .hero-photo-frame-lg svg {
+      width: 56px;
+      height: 56px;
+      color: rgba(255,255,255,0.35);
+    }
+    .hero-photo-hint {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ── Stats section ───────────────────────────────────────────── */
+    .stats {
+      background: var(--bg-dark);
+      padding: 0;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .stat-item {
+      padding: 52px 40px;
+      border-right: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-number {
+      font-family: var(--font-serif);
+      font-size: clamp(44px, 4.2vw, 62px);
+      font-weight: 300;
+      color: var(--white);
+      line-height: 1;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+    .stat-number em { font-style: normal; color: var(--primary); }
+    .stat-label {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+    }
+
+    /* ── Marquee strip ───────────────────────────────────────────── */
+    .marquee-wrap {
+      overflow: hidden;
+      background: var(--primary);
+      padding: 15px 0;
+    }
+    .marquee-track {
+      display: flex;
+      animation: marquee-scroll 30s linear infinite;
+      width: max-content;
+    }
+    .marquee-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 20px;
+      padding: 0 32px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.88);
+      white-space: nowrap;
+    }
+    .marquee-sep {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      flex-shrink: 0;
+    }
+    @keyframes marquee-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── Process section ─────────────────────────────────────────── */
+    .process { background: var(--bg); }
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+    .process-step {
+      padding: 44px 36px;
+      border-right: 1px solid var(--border);
+      position: relative;
+      transition: background 220ms var(--ease-out);
+    }
+    .process-step:last-child { border-right: none; }
+    @media (hover: hover) and (pointer: fine) {
+      .process-step:hover { background: var(--bg-alt); }
+    }
+    .process-step-num {
+      font-family: var(--font-serif);
+      font-size: 64px;
+      font-weight: 300;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      display: block;
+    }
+    .process-step-icon {
+      width: 40px; height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--primary-dark);
+    }
+    .process-step-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+    .process-step-desc {
+      font-size: 13.5px;
+      font-weight: 300;
+      line-height: 1.68;
+      color: var(--text-muted);
+    }
+    .process-connector {
+      position: absolute;
+      top: 44px; right: -1px;
+      width: 24px; height: 24px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      transform: translateX(50%);
+      color: var(--text-light);
+    }
+    .process-step:last-child .process-connector { display: none; }
+
+    /* ── Service numbered indicator ──────────────────────────────── */
+    .service-card { position: relative; }
+    .service-idx {
+      position: absolute;
+      top: 22px; right: 22px;
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--border);
+      letter-spacing: 0.02em;
+      pointer-events: none;
+    }
+
+    /* ── Responsive additions ────────────────────────────────────── */
+    @media (max-width: 1080px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+      .stat-item:nth-child(3) { border-top: 1px solid var(--border-dark); }
+      .process-grid { grid-template-columns: repeat(2, 1fr); }
+      .process-step:nth-child(2) { border-right: none; }
+      .process-step:nth-child(3) { border-top: 1px solid var(--border); }
+      .process-connector { display: none; }
+    }
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stat-item { padding: 36px 24px; }
+      .process-grid { grid-template-columns: 1fr; }
+      .process-step { border-right: none; border-bottom: 1px solid var(--border); }
+      .process-step:last-child { border-bottom: none; }
+      .hero-deco-bar { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -1264,18 +1481,23 @@ export const clinicTemplate: string = `<!DOCTYPE html>
 
   <!-- Columna visual -->
   <div class="hero-visual">
-    <div class="hero-photo-placeholder">
-      <div class="hero-photo-inner">
-        <div class="hero-photo-frame">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-            <rect x="3" y="3" width="18" height="18" rx="1"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-          </svg>
-        </div>
-        <p class="hero-photo-label">Fotograf&iacute;a de la cl&iacute;nica</p>
+    <div class="hero-visual-bg"></div>
+    <div class="hero-visual-grid"></div>
+    <div class="hero-deco-bar"></div>
+
+    <!-- Área de foto de la clínica -->
+    <div class="hero-photo-area">
+      <div class="hero-photo-frame-lg">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="0.8">
+          <rect x="6" y="6" width="36" height="36" rx="1"/>
+          <circle cx="17" cy="17" r="4"/>
+          <path d="M6 32l10-10 8 8 6-6 12 12"/>
+        </svg>
+        <p class="hero-photo-hint">Fotograf&iacute;a de la cl&iacute;nica</p>
       </div>
     </div>
-    <!-- Available slots strip -->
+
+    <!-- Available strip -->
     <div class="hero-available">
       <div class="hero-available-dot"></div>
       <p class="hero-available-text">
@@ -1284,6 +1506,54 @@ export const clinicTemplate: string = `<!DOCTYPE html>
     </div>
   </div>
 </section>
+
+<!-- ================================================================
+     STATS
+================================================================ -->
+<section class="stats" aria-label="Nuestros n&uacute;meros">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <p class="stat-number">500<em>+</em></p>
+      <p class="stat-label">Pacientes atendidos</p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-number">4.9<em>&#9733;</em></p>
+      <p class="stat-label">Calificaci&oacute;n Google</p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-number">10<em>+</em></p>
+      <p class="stat-label">A&ntilde;os de experiencia</p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-number">20<em>+</em></p>
+      <p class="stat-label">Tratamientos disponibles</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     MARQUEE STRIP
+================================================================ -->
+<div class="marquee-wrap" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-item">Radiofrecuencia<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Microdermoabrasi&oacute;n<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Tratamientos Faciales<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Depilaci&oacute;n L&aacute;ser<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Hidrataci&oacute;n Profunda<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Rellenos D&eacute;rmicos<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Peeling Qu&iacute;mico<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Masajes Terap&eacute;uticos<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Radiofrecuencia<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Microdermoabrasi&oacute;n<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Tratamientos Faciales<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Depilaci&oacute;n L&aacute;ser<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Hidrataci&oacute;n Profunda<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Rellenos D&eacute;rmicos<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Peeling Qu&iacute;mico<span class="marquee-sep"></span></span>
+    <span class="marquee-item">Masajes Terap&eacute;uticos<span class="marquee-sep"></span></span>
+  </div>
+</div>
 
 <!-- ================================================================
      SERVICIOS
@@ -1301,6 +1571,80 @@ export const clinicTemplate: string = `<!DOCTYPE html>
       <div class="skel-card"><div class="skel skel-line lg"></div><div class="skel skel-line full" style="margin:14px 0 8px"></div><div class="skel skel-line w80"></div></div>
       <div class="skel-card"><div class="skel skel-line lg"></div><div class="skel skel-line full" style="margin:14px 0 8px"></div><div class="skel skel-line w80"></div></div>
       <div class="skel-card" style="border-right:none"><div class="skel skel-line lg"></div><div class="skel skel-line full" style="margin:14px 0 8px"></div><div class="skel skel-line w80"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     PROCESO
+================================================================ -->
+<section class="process">
+  <div class="container">
+    <div class="section-hd centered fade-up">
+      <span class="section-label">C&oacute;mo funciona</span>
+      <h2 class="section-title">Reservar es <em>muy simple</em></h2>
+    </div>
+
+    <div class="process-grid">
+      <!-- Paso 1 -->
+      <div class="process-step">
+        <span class="process-step-num">01</span>
+        <div class="process-step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <h3 class="process-step-title">Eleg&iacute; tu tratamiento</h3>
+        <p class="process-step-desc">Explor&aacute; el men&uacute; de servicios y selecci&oacute;n el que m&aacute;s se adapta a tus necesidades.</p>
+        <div class="process-connector">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 5h6M5 2l3 3-3 3"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Paso 2 -->
+      <div class="process-step">
+        <span class="process-step-num">02</span>
+        <div class="process-step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h3 class="process-step-title">Selecci&oacute;n fecha y hora</h3>
+        <p class="process-step-desc">Revis&aacute; los turnos disponibles en tiempo real y eleg&iacute; el d&iacute;a y horario que mejor te quede.</p>
+        <div class="process-connector">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 5h6M5 2l3 3-3 3"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Paso 3 -->
+      <div class="process-step">
+        <span class="process-step-num">03</span>
+        <div class="process-step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 1h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16z"/>
+          </svg>
+        </div>
+        <h3 class="process-step-title">Confirmamos por WhatsApp</h3>
+        <p class="process-step-desc">Recib&iacute;s la confirmaci&oacute;n autom&aacute;tica en segundos y un recordatorio 24 h antes.</p>
+        <div class="process-connector">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 5h6M5 2l3 3-3 3"/>
+          </svg>
+        </div>
+      </div>
+      <!-- Paso 4 -->
+      <div class="process-step">
+        <span class="process-step-num">04</span>
+        <div class="process-step-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </div>
+        <h3 class="process-step-title">Te esperamos</h3>
+        <p class="process-step-desc">Lleg&aacute; relajada. Nuestro equipo te espera para brindarte la mejor experiencia de bienestar.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1815,6 +2159,7 @@ async function loadServices() {
     // Renderizar cards
     grid.innerHTML = data.map((s, i) => \`
       <div class="service-card fade-up\${i > 0 ? \` d\${Math.min(i,4)}\` : ''}">
+        <span class="service-idx">\${String(i + 1).padStart(2,'0')}</span>
         <p class="service-name">\${escHtml(s.name)}</p>
         <p class="service-desc">\${escHtml(s.description || '')}</p>
         <div class="service-meta">
@@ -2187,7 +2532,7 @@ function observeAnimations() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  }, { threshold: 0.02, rootMargin: '120px 0px 120px 0px' });
 
   els.forEach(el => {
     el.classList.add('observed');
@@ -2197,18 +2542,6 @@ function observeAnimations() {
 
 /* New .reveal / .reveal-stagger system */
 function initReveal() {
-  /* Auto-add .reveal to section headings, grids, and cards not already animated */
-  const autoReveal = document.querySelectorAll(
-    'section:not(.hero) .section-hd:not(.fade-up):not(.reveal),' +
-    '.services-grid:not(.reveal-stagger):not(.reveal),' +
-    '.testimonials-grid:not(.reveal-stagger):not(.reveal),' +
-    '.booking-form-wrap:not(.fade-up):not(.reveal),' +
-    '.contact-items:not(.fade-up):not(.reveal),' +
-    '.contact-map-wrap:not(.fade-up):not(.reveal),' +
-    '.footer-top:not(.reveal)'
-  );
-  autoReveal.forEach(el => el.classList.add('reveal'));
-
   /* Wire up stagger indices for direct children of .reveal-stagger */
   document.querySelectorAll('.reveal-stagger').forEach(parent => {
     Array.from(parent.children).forEach((child, i) => {
@@ -2223,13 +2556,20 @@ function initReveal() {
         revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.07, rootMargin: '0px 0px -32px 0px' });
+  }, { threshold: 0.02, rootMargin: '120px 0px 120px 0px' });
 
   document.querySelectorAll('.reveal:not(.reveal-observed), .reveal-stagger:not(.reveal-observed)')
     .forEach(el => {
       el.classList.add('reveal-observed');
       revealObserver.observe(el);
     });
+
+  /* Safety fallback: force all animated elements visible after 2.5s
+     in case IntersectionObserver doesn't fire (e.g. fast scroll, some browsers) */
+  setTimeout(() => {
+    document.querySelectorAll('.fade-up:not(.in)').forEach(el => el.classList.add('in'));
+    document.querySelectorAll('.reveal:not(.visible), .reveal-stagger:not(.visible)').forEach(el => el.classList.add('visible'));
+  }, 2500);
 }
 
 /* ================================================================
